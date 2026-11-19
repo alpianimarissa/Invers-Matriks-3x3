@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembahasan & Penyelesaian Rinci Kuis Invers Matriks 3×3</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome untuk Ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Kurung siku matriks persegi [ ... ] */
+        .matrix-bracket {
+            display: inline-flex;
+            align-items: center;
+            position: relative;
+            padding: 3px 9px;
+            margin: 0 4px;
+            font-family: 'JetBrains Mono', monospace;
+            vertical-align: middle;
+        }
+        .matrix-bracket::before,
+        .matrix-bracket::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            border: 2px solid currentColor;
+        }
+        .matrix-bracket::before {
+            left: 0;
+            border-right: none;
+            border-radius: 4px 0 0 4px;
+        }
+        .matrix-bracket::after {
+            right: 0;
+            border-left: none;
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* Garis lurus determinan | ... | */
+        .det-bracket {
+            display: inline-flex;
+            align-items: center;
+            position: relative;
+            padding: 3px 9px;
+            margin: 0 4px;
+            font-family: 'JetBrains Mono', monospace;
+            vertical-align: middle;
+            border-left: 2px solid currentColor;
+            border-right: 2px solid currentColor;
+        }
+
+        .matrix-grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(26px, auto));
+            gap: 4px 12px;
+            text-align: center;
+            align-items: center;
+        }
+        .matrix-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(30px, auto));
+            gap: 5px 14px;
+            text-align: center;
+            align-items: center;
+        }
+        .matrix-col-1 {
+            display: grid;
+            grid-template-columns: minmax(28px, auto);
+            gap: 4px;
+            text-align: center;
+            align-items: center;
+        }
+
+        /* Pecahan vertikal yang rapi */
+        .frac {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: middle;
+            margin: 0 3px;
+            line-height: 1.15;
+            font-size: 0.88em;
+        }
+        .frac > span:first-child {
+            border-bottom: 1.5px solid currentColor;
+            padding: 0 4px 1px 4px;
+        }
+        .frac > span:last-child {
+            padding: 1px 4px 0 4px;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col selection:bg-indigo-100 selection:text-indigo-900">
+
+    <!-- =========================================================
+         1. HEADER BERTEMA AKADEMIK MATEMATIKA
+    ========================================================== -->
+    <header class="bg-gradient-to-br from-slate-900 via-indigo-950 to-indigo-900 text-white border-b border-indigo-800/60 shadow-md">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-7 sm:py-9">
+            <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                <div class="space-y-2.5 max-w-3xl">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 border border-indigo-400/30 text-indigo-200 text-xs font-semibold tracking-wide uppercase">
+                        <i class="fa-solid fa-graduation-cap text-amber-300"></i>
+                        <span>Panduan Belajar & Evaluasi Aljabar Linear</span>
+                    </div>
+                    <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight text-white">
+                        Pembahasan &amp; Penyelesaian Rinci Kuis Invers Matriks <span class="text-amber-300">3×3</span>
+                    </h1>
+                    <p class="text-sm sm:text-base text-indigo-100/90 leading-relaxed">
+                        Bedah tuntas 10 soal invers matriks ordo 3×3 langkah demi langkah—mencakup determinan, syarat matriks singular/non-singular, minor, kofaktor, adjoin, penjumlahan elemen <span class="font-mono text-amber-200">a+b+c+d+e+f</span>, serta aplikasi matriks.
+                    </p>
+                </div>
+
+                <!-- Kartu Progress Pemahaman Belajar -->
+                <div class="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-4 sm:p-5 lg:w-72 shrink-0">
+                    <div class="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-indigo-200 mb-2">
+                        <span>Progres Pemahaman</span>
+                        <span id="understood-count" class="font-mono text-amber-300 text-sm">0 / 10</span>
+                    </div>
+                    <div class="w-full h-2.5 bg-slate-950/60 rounded-full overflow-hidden mb-2.5">
+                        <div id="understood-progress-bar" class="h-full bg-gradient-to-r from-emerald-400 to-teal-300 w-0 transition-all duration-300"></div>
+                    </div>
+                    <p id="understood-caption" class="text-xs text-indigo-100/80">
+                        Tandai tiap soal setelah kamu memahami alur penyelesaiannya.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Ringkasan Distribusi Kunci Jawaban Acak & Seimbang (2 per opsi A-E) -->
+            <div class="mt-6 pt-5 border-t border-white/15">
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                    <span class="text-xs font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+                        <i class="fa-solid fa-key"></i> Ringkasan Kunci Jawaban Seimbang (Masing-Masing 2 Soal per Opsi A–E)
+                    </span>
+                    <span class="text-[11px] text-indigo-200">Pola: 1=B, 2=D, 3=A, 4=C, 5=E, 6=B, 7=D, 8=A, 9=C, 10=E</span>
+                </div>
+                <div id="answer-key-strip" class="grid grid-cols-5 sm:grid-cols-10 gap-2">
+                    <!-- Dirender otomatis oleh JS -->
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- =========================================================
+         2. BILAH NAVIGASI CEPAT, FILTER TOPIK & KONTROL TAMPILAN
+    ========================================================== -->
+    <div class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-3 space-y-3">
+            <!-- Baris 1: Navigasi Cepat Nomor 1-10 & Tombol Expand/Collapse -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div class="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0" aria-label="Navigasi cepat nomor soal 1 sampai 10">
+                    <span class="text-xs font-bold text-slate-500 mr-1 shrink-0">Ke Soal:</span>
+                    <div id="quick-nav-buttons" class="flex items-center gap-1.5">
+                        <!-- Tombol 1-10 dirender via JS -->
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 shrink-0 self-end md:self-auto">
+                    <button onclick="setAllSolutionsVisible(true)" class="px-3 py-1.5 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-semibold transition cursor-pointer flex items-center gap-1.5">
+                        <i class="fa-solid fa-eye"></i> Tampilkan Semua
+                    </button>
+                    <button onclick="setAllSolutionsVisible(false)" class="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-semibold transition cursor-pointer flex items-center gap-1.5">
+                        <i class="fa-solid fa-eye-slash"></i> Sembunyikan Semua
+                    </button>
+                </div>
+            </div>
+
+            <!-- Baris 2: Filter Kategori Topik -->
+            <div class="flex items-center gap-2 overflow-x-auto pb-1">
+                <span class="text-xs font-bold text-slate-500 shrink-0 flex items-center gap-1">
+                    <i class="fa-solid fa-filter text-indigo-600"></i> Topik:
+                </span>
+                <div id="topic-filter-bar" class="flex items-center gap-1.5">
+                    <button data-topic="ALL" onclick="filterByTopic('ALL')" class="topic-btn px-3 py-1 rounded-full text-xs font-bold bg-indigo-600 text-white transition cursor-pointer shrink-0">
+                        Semua (10)
+                    </button>
+                    <button data-topic="Determinan & Syarat Invers" onclick="filterByTopic('Determinan & Syarat Invers')" class="topic-btn px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer shrink-0">
+                        Determinan &amp; Syarat Invers
+                    </button>
+                    <button data-topic="Minor-Kofaktor-Adjoin" onclick="filterByTopic('Minor-Kofaktor-Adjoin')" class="topic-btn px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer shrink-0">
+                        Minor-Kofaktor-Adjoin
+                    </button>
+                    <button data-topic="Nilai Elemen a+b+c+d+e+f" onclick="filterByTopic('Nilai Elemen a+b+c+d+e+f')" class="topic-btn px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer shrink-0">
+                        Nilai Elemen a+b+c+d+e+f
+                    </button>
+                    <button data-topic="Aplikasi" onclick="filterByTopic('Aplikasi')" class="topic-btn px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer shrink-0">
+                        Aplikasi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         3. DAFTAR KARTU PEMBAHASAN & PENYELESAIAN (SOAL 1 - 10)
+    ========================================================== -->
+    <main class="max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 flex-1">
+        <!-- Panduan Singkat Membaca Langkah -->
+        <div class="bg-indigo-50/90 border border-indigo-200 rounded-2xl p-4 sm:p-5 mb-7 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs sm:text-sm text-indigo-950">
+            <div class="flex items-start sm:items-center gap-3">
+                <div class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0 mt-0.5 sm:mt-0">
+                    <i class="fa-solid fa-circle-info"></i>
+                </div>
+                <p class="leading-relaxed">
+                    Setiap pembahasan disusun urut dari <strong>Langkah 1 (Determinan &amp; Cek Singularitas)</strong> hingga <strong>Langkah 5 (Invers &amp; Nilai Akhir)</strong>. Klik <strong>Buka/Tutup Langkah</strong> pada kartu tertentu jika ingin menguji ingatanmu terlebih dahulu.
+                </p>
+            </div>
+        </div>
+
+        <!-- Container Kartu Soal -->
+        <div id="solutions-container" class="space-y-7">
+            <!-- Dirender otomatis oleh JavaScript -->
+        </div>
+
+        <!-- Pesan Jika Filter Kosong (Jaga-jaga) -->
+        <div id="empty-filter-msg" class="hidden bg-white rounded-2xl border border-slate-200 p-10 text-center">
+            <p class="text-slate-600 font-medium mb-3">Tidak ada soal pada kategori filter ini.</p>
+            <button onclick="filterByTopic('ALL')" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-semibold cursor-pointer">
+                Tampilkan Semua Soal
+            </button>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-6 px-4 border-t border-slate-800 mt-12">
+        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+            <div class="flex items-center gap-2">
+                <span class="w-6 h-6 rounded-md bg-indigo-600 text-white font-mono font-bold flex items-center justify-center">3×3</span>
+                <span class="text-slate-200 font-semibold">Pembahasan Rinci Invers Matriks Ordo 3×3</span>
+            </div>
+            <p>Progres pemahaman tersimpan otomatis di peramban (<span class="font-mono text-slate-300">localStorage</span>).</p>
+        </div>
+    </footer>
+
+    <!-- =========================================================
+         DATA & LOGIKA INTERAKTIVITAS JAVASCRIPT
+    ========================================================== -->
+    <script>
+        // Helper pembuat matriks persegi 3x3 rapi menggunakan HTML/CSS Grid
+        function m3(vals, cls = "") {
+            const cells = vals.map(v => `<span>${v}</span>`).join('');
+            return `<span class="matrix-bracket ${cls}"><span class="matrix-grid-3">${cells}</span></span>`;
+        }
+
+        // Helper pembuat determinan 3x3 rapi menggunakan garis lurus | ... |
+        function d3(vals, cls = "") {
+            const cells = vals.map(v => `<span>${v}</span>`).join('');
+            return `<span class="det-bracket ${cls}"><span class="matrix-grid-3">${cells}</span></span>`;
+        }
+
+        // Helper pembuat determinan minor 2x2 rapi
+        function d2(vals, cls = "") {
+            const cells = vals.map(v => `<span>${v}</span>`).join('');
+            return `<span class="det-bracket ${cls}"><span class="matrix-grid-2">${cells}</span></span>`;
+        }
+
+        // Helper pembuat matriks kolom 3x1
+        function c3(vals, cls = "") {
+            const rows = vals.map(v => `<span>${v}</span>`).join('');
+            return `<span class="matrix-bracket ${cls}"><span class="matrix-col-1">${rows}</span></span>`;
+        }
+
+        // Helper pecahan vertikal
+        function frac(num, den) {
+            return `<span class="frac"><span>${num}</span><span>${den}</span></span>`;
+        }
+
+        // Data 10 Soal & Pembahasan Rinci
+        // Kunci jawaban acak & seimbang (masing-masing 2 per opsi A, B, C, D, E):
+        // 1: B | 2: D | 3: A | 4: C | 5: E | 6: B | 7: D | 8: A | 9: C | 10: E
+        const quizSolutionsData = [
+            {
+                number: 1,
+                topic: "Determinan & Syarat Invers",
+                correctLetter: "B",
+                questionHtml: `Diketahui matriks persegi berordo 3×3 yaitu <span class="font-mono font-bold text-indigo-950">P =</span> ${m3([2, -1, 3, 1, 4, 0, -2, 1, 1])}. Tentukan nilai determinan <span class="font-mono font-bold text-indigo-950">det(P)</span> dan status keberadaan invers matriks <span class="font-mono font-bold">P</span>!`,
+                options: [
+                    { letter: "A", text: "det(P) = 11 (matriks non-singular)", reason: "Angka 11 baru merupakan jumlah hasil kali tiga diagonal utama saja, belum dikurangi hasil kali tiga diagonal samping." },
+                    { letter: "B", text: "det(P) = 36 (matriks non-singular, memiliki invers)", reason: "Benar. Diagonal turun berjumlah 11 dan diagonal naik berjumlah -25, sehingga 11 − (-25) = 36 ≠ 0." },
+                    { letter: "C", text: "det(P) = 24 (matriks non-singular)", reason: "Terjadi kekeliruan saat menjumlahkan hasil kali diagonal samping (-24 + 0 − 1 = -25)." },
+                    { letter: "D", text: "det(P) = −14 (matriks non-singular)", reason: "Terjadi kesalahan tanda saat mengurangkan jumlah diagonal naik dari jumlah diagonal utama." },
+                    { letter: "E", text: "det(P) = 0 (matriks singular, tidak memiliki invers)", reason: "Determinan matriks P tidak bernilai 0, sehingga P merupakan matriks non-singular." }
+                ],
+                steps: {
+                    step1: `
+                        <p class="mb-2">Gunakan <strong>Aturan Sarrus</strong> dengan menyalin kolom ke-1 dan kolom ke-2 ke sebelah kanan determinan:</p>
+                        <div class="bg-white p-3.5 rounded-xl border border-slate-200 overflow-x-auto font-mono text-xs sm:text-sm mb-2.5">
+                            det(P) = ${d3([2, -1, 3, 1, 4, 0, -2, 1, 1])}
+                            <span class="inline-grid grid-cols-2 gap-x-3 gap-y-1 text-slate-500 border-l border-dashed border-slate-400 pl-2 align-middle">
+                                <span>2</span><span>-1</span>
+                                <span>1</span><span>4</span>
+                                <span>-2</span><span>1</span>
+                            </span>
+                        </div>
+                        <ul class="space-y-1.5 text-xs sm:text-sm">
+                            <li>• <strong>Diagonal turun (positif / +):</strong><br>
+                                <span class="font-mono">(2 × 4 × 1) + ((-1) × 0 × (-2)) + (3 × 1 × 1) = 8 + 0 + 3 = <strong>11</strong></span>
+                            </li>
+                            <li>• <strong>Diagonal naik (negatif / −):</strong><br>
+                                <span class="font-mono">((-2) × 4 × 3) + (1 × 0 × 2) + (1 × 1 × (-1)) = -24 + 0 − 1 = <strong>-25</strong></span>
+                            </li>
+                            <li>• <strong>Nilai Determinan &amp; Syarat Invers:</strong><br>
+                                <span class="font-mono">det(P) = 11 − (-25) = 11 + 25 = <strong>36</strong></span>.<br>
+                                Karena <span class="font-mono">det(P) = 36 ≠ 0</span>, matriks <strong>P</strong> adalah <strong>matriks non-singular</strong> dan <strong>memiliki invers</strong>.
+                            </li>
+                        </ul>
+                    `,
+                    step2: `
+                        <p class="mb-2">Karena pertanyaan utama soal ini adalah nilai <span class="font-mono">det(P)</span> dan status inversnya, berikut rincian minor baris pertama sebagai pelengkap pemahaman struktur matriks:</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 font-mono text-xs">
+                            <div class="bg-white p-2.5 rounded-lg border border-slate-200">
+                                M₁₁ = ${d2([4, 0, 1, 1])} = (4)(1) − (0)(1) = <strong>4</strong>
+                            </div>
+                            <div class="bg-white p-2.5 rounded-lg border border-slate-200">
+                                M₁₂ = ${d2([1, 0, -2, 1])} = (1)(1) − (0)(-2) = <strong>1</strong>
+                            </div>
+                            <div class="bg-white p-2.5 rounded-lg border border-slate-200">
+                                M₁₃ = ${d2([1, 4, -2, 1])} = (1)(1) − (4)(-2) = <strong>9</strong>
+                            </div>
+                        </div>
+                    `,
+                    step3: `
+                        <p>Dari ekspansi baris ke-1 menggunakan kofaktor <span class="font-mono">C₁ⱼ = (-1)¹⁺ʲ · M₁ⱼ</span>:</p>
+                        <p class="font-mono text-xs sm:text-sm mt-1">
+                            C₁₁ = (+1)(4) = 4, &nbsp; C₁₂ = (-1)(1) = -1, &nbsp; C₁₃ = (+1)(9) = 9
+                        </p>
+                    `,
+                    step4: `
+                        <p>Jika ingin melanjutkan ke matriks adjoin <span class="font-mono">adj(P) = Cᵀ</span>, baris-baris pada matriks kofaktor <span class="font-mono">C</span> ditranspose menjadi kolom-kolom pada <span class="font-mono">adj(P)</span>.</p>
+                    `,
+                    step5: `
+                        <p>Diperoleh <span class="font-mono font-bold text-emerald-800">det(P) = 36</span> dan matriks <strong>P</strong> bersifat <strong>non-singular</strong> (memiliki invers karena <span class="font-mono">det(P) ≠ 0</span>). Jawaban yang tepat adalah <strong>B</strong>.</p>
+                    `
+                }
+            },
+            {
+                number: 2,
+                topic: "Determinan & Syarat Invers",
+                correctLetter: "D",
+                questionHtml: `Agar matriks <span class="font-mono font-bold text-indigo-950">Q =</span> ${m3(["k", 1, 2, 1, 2, 1, 3, 1, 2])} tidak mempunyai invers (matriks singular), nilai <span class="font-mono font-bold text-indigo-950">k</span> yang memenuhi adalah...`,
+                options: [
+                    { letter: "A", text: "1", reason: "Jika k = 1, maka det(Q) = 3(1) − 9 = -6 ≠ 0, sehingga matriks Q masih memiliki invers." },
+                    { letter: "B", text: "2", reason: "Jika k = 2, maka det(Q) = 3(2) − 9 = -3 ≠ 0, sehingga Q bukan matriks singular." },
+                    { letter: "C", text: "−3", reason: "Jika k = -3, maka det(Q) = 3(-3) − 9 = -18 ≠ 0." },
+                    { letter: "D", text: "3", reason: "Benar. Substitusi k = 3 menghasilkan det(Q) = 3(3) − 9 = 0, sehingga Q singular dan tidak punya invers." },
+                    { letter: "E", text: "0", reason: "Jika k = 0, maka det(Q) = 3(0) − 9 = -9 ≠ 0." }
+                ],
+                steps: {
+                    step1: `
+                        <p class="mb-2">Syarat suatu matriks <strong>tidak mempunyai invers (matriks singular)</strong> adalah <span class="font-mono font-bold text-rose-700">det(Q) = 0</span>. Kita hitung <span class="font-mono">det(Q)</span> dengan ekspansi baris ke-1:</p>
+                        <p class="font-mono text-xs sm:text-sm bg-white p-3 rounded-xl border border-slate-200 leading-relaxed">
+                            det(Q) = k · ${d2([2, 1, 1, 2])} − 1 · ${d2([1, 1, 3, 2])} + 2 · ${d2([1, 2, 3, 1])}
+                        </p>
+                    `,
+                    step2: `
+                        <p class="mb-2">Hitung tiap determinan minor 2×2 (<span class="font-mono">ad − bc</span>):</p>
+                        <ul class="space-y-1 font-mono text-xs sm:text-sm">
+                            <li>• Minor elemen <span class="text-indigo-700">k</span>: (2)(2) − (1)(1) = 4 − 1 = <strong>3</strong></li>
+                            <li>• Minor elemen <span class="text-indigo-700">1</span> (kolom 2): (1)(2) − (1)(3) = 2 − 3 = <strong>-1</strong></li>
+                            <li>• Minor elemen <span class="text-indigo-700">2</span> (kolom 3): (1)(1) − (2)(3) = 1 − 6 = <strong>-5</strong></li>
+                        </ul>
+                    `,
+                    step3: `
+                        <p class="mb-1.5">Terapkan tanda kofaktor baris ke-1 (<span class="font-mono">+</span>, <span class="font-mono">−</span>, <span class="font-mono">+</span>):</p>
+                        <p class="font-mono text-xs sm:text-sm">
+                            det(Q) = k(+3) − 1(-1) + 2(-5) = 3k + 1 − 10 = <strong>3k − 9</strong>
+                        </p>
+                    `,
+                    step4: `
+                        <p>Pada soal ini kita tidak perlu menyusun matriks adjoin karena yang dicari adalah nilai parameter <span class="font-mono">k</span> agar invers tidak terdefinisi.</p>
+                    `,
+                    step5: `
+                        <p class="mb-1.5">Setel <span class="font-mono">det(Q) = 0</span> untuk mencari <span class="font-mono">k</span>:</p>
+                        <p class="font-mono text-xs sm:text-sm bg-white p-3 rounded-xl border border-slate-200">
+                            3k − 9 = 0 &nbsp;⟹&nbsp; 3k = 9 &nbsp;⟹&nbsp; <strong class="text-emerald-700 text-base">k = 3</strong>
+                        </p>
+                        <p class="mt-2">Jadi, jawaban yang benar adalah <strong>D</strong>.</p>
+                    `
+                }
+            },
+            {
+                number: 3,
+                topic: "Minor-Kofaktor-Adjoin",
+                correctLetter: "A",
+                questionHtml: `Diberikan matriks <span class="font-mono font-bold text-indigo-950">R =</span> ${m3([4, -2, 1, 3, 5, -1, 2, 0, 3])}. Nilai elemen kofaktor <span class="font-mono font-bold text-indigo-950">C₂₃</span> dari matriks <span class="font-mono font-bold">R</span> adalah...`,
+                options: [
+                    { letter: "A", text: "−4", reason: "Benar. Minor M₂₃ = 4 dan tanda posisi (2,3) adalah (-1)²⁺³ = (-1)⁵ = -1, sehingga C₂₃ = (-1)(4) = -4." },
+                    { letter: "B", text: "4", reason: "Nilai 4 adalah determinan minor M₂₃, belum dikalikan faktor tanda (-1)²⁺³ = -1." },
+                    { letter: "C", text: "−14", reason: "Terjadi kesalahan saat menghitung determinan minor 2×2 (4×0 − (-2)×2 = 4, bukan 14)." },
+                    { letter: "D", text: "14", reason: "Keliru pada perkalian silang minor 2×2 maupun tanda kofaktor." },
+                    { letter: "E", text: "−2", reason: "Angka -2 merupakan elemen baris ke-1 kolom ke-2 pada matriks R, bukan nilai kofaktor C₂₃." }
+                ],
+                steps: {
+                    step1: `
+                        <p class="mb-2">Kita cek determinan matriks <strong>R</strong> terlebih dahulu untuk memastikan matriks non-singular:</p>
+                        <p class="font-mono text-xs sm:text-sm">
+                            det(R) = (4·5·3 + (-2)(-1)(2) + 1·3·0) − (2·5·1 + 0·(-1)(4) + 3·3·(-2)) = (60 + 4 + 0) − (10 + 0 − 18) = 64 − (-8) = <strong>72 ≠ 0</strong>.
+                        </p>
+                    `,
+                    step2: `
+                        <p class="mb-2">Untuk mencari kofaktor <span class="font-mono">C₂₃</span>, tentukan dahulu <strong>Minor M₂₃</strong> dengan menutup <strong>baris ke-2</strong> dan <strong>kolom ke-3</strong> pada matriks R:</p>
+                        <div class="bg-white p-3 rounded-xl border border-slate-200 font-mono text-xs sm:text-sm mb-2">
+                            M₂₃ = ${d2([4, -2, 2, 0])} = (4 × 0) − ((-2) × 2) = 0 − (-4) = <strong class="text-indigo-700">4</strong>
+                        </div>
+                    `,
+                    step3: `
+                        <p class="mb-1.5">Gunakan rumus kofaktor <span class="font-mono">Cᵢⱼ = (-1)ⁱ⁺ʲ · Mᵢⱼ</span> untuk <span class="font-mono">i = 2</span> dan <span class="font-mono">j = 3</span>:</p>
+                        <p class="font-mono text-xs sm:text-sm bg-white p-3 rounded-xl border border-slate-200">
+                            C₂₃ = (-1)²⁺³ × M₂₃ = (-1)⁵ × 4 = (-1) × 4 = <strong class="text-emerald-700 text-base">-4</strong>
+                        </p>
+                    `,
+                    step4: `
+                        <p>Dalam matriks adjoin <span class="font-mono">adj(R) = Cᵀ</span>, elemen kofaktor <span class="font-mono">C₂₃ = -4</span> akan menempati posisi <strong>baris ke-3 kolom ke-2</strong>.</p>
+                    `,
+                    step5: `
+                        <p>Nilai kofaktor <span class="font-mono font-bold text-emerald-800">C₂₃ = -4</span>, sehingga pilihan yang tepat adalah <strong>A</strong>.</p>
+                    `
+                }
+            },
+            {
+                number: 4,
+                topic: "Minor-Kofaktor-Adjoin",
+                correctLetter: "C",
+                questionHtml: `Tentukan matriks invers dari matriks segitiga atas <span class="font-mono font-bold text-indigo-950">S =</span> ${m3([1, 2, 3, 0, 1, 4, 0, 0, 1])}!`,
+                options: [
+                    { letter: "A", text: m3([1, -2, -3, 0, 1, -4, 0, 0, 1]), reason: "Menjadikan semua elemen atas negatif saja tidak tepat karena muncul efek perkalian 2×4 pada minor M₃₁." },
+                    { letter: "B", text: m3([1, 2, -5, 0, 1, 4, 0, 0, 1]), reason: "Tanda pada elemen (1,2) dan (2,3) tidak berubah tanda serta nilai di (1,3) keliru tanda." },
+                    { letter: "C", text: m3([1, -2, 5, 0, 1, -4, 0, 0, 1]), reason: "Benar. det(S) = 1 dan transpose matriks kofaktor menghasilkan elemen (1,3) bernilai 5." },
+                    { letter: "D", text: m3([1, -2, 8, 0, 1, -4, 0, 0, 1]), reason: "Minor M₃₁ adalah (2×4) − (3×1) = 8 − 3 = 5, bukan 8." },
+                    { letter: "E", text: m3([1, 2, 5, 0, 1, 4, 0, 0, 1]), reason: "Elemen (1,2) dan (2,3) pada invers matriks ini seharusnya bernilai -2 dan -4." }
+                ],
+                steps: {
+                    step1: `
+                        <p class="mb-2">Karena <strong>S</strong> adalah matriks segitiga atas, determinannya adalah hasil kali elemen diagonal utama:</p>
+                        <p class="font-mono text-xs sm:text-sm bg-white p-3 rounded-xl border border-slate-200">
+                            det(S) = 1 × 1 × 1 = <strong>1</strong> ≠ 0 &nbsp;(matriks non-singular, memiliki invers).
+                        </p>
+                    `,
+                    step2: `
+                        <p class="mb-2">Hitung seluruh 9 minor <span class="font-mono">Mᵢⱼ</span>:</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 font-mono text-xs bg-white p-3 rounded-xl border border-slate-200">
+                            <div>M₁₁ = ${d2([1, 4, 0, 1])} = 1 − 0 = <strong>1</strong></div>
+                            <div>M₁₂ = ${d2([0, 4, 0, 1])} = 0 − 0 = <strong>0</strong></div>
+                            <div>M₁₃ = ${d2([0, 1, 0, 0])} = 0 − 0 = <strong>0</strong></div>
+                            <div>M₂₁ = ${d2([2, 3, 0, 1])} = 2 − 0 = <strong>2</strong></div>
+                            <div>M₂₂ = ${d2([1, 3, 0, 1])} = 1 − 0 = <strong>1</strong></div>
+                            <div>M₂₃ = ${d2([1, 2, 0, 0])} = 0 − 0 = <strong>0</strong></div>
+                            <div>M₃₁ = ${d2([2, 3, 1, 4])} = 8 − 3 = <strong>5</strong></div>
+                            <div>M₃₂ = ${d2([1, 3, 0, 4])} = 4 − 0 = <strong>4</strong></div>
+                            <div>M₃₃ = ${d2([1, 2, 0, 1])} = 1 − 0 = <strong>1</strong></div>
+                        </div>
+                    `,
+                    step3: `
+                        <p class="mb-2">Kalikan setiap minor dengan tanda <span class="font-mono">(-1)ⁱ⁺ʲ</span> untuk membentuk matriks kofaktor <strong>C</strong>:</p>
+                        <div class="font-mono text-xs sm:text-sm">
+                            C = ${m3(["+1", "-0", "+0", "-2", "+1", "-0", "+5", "-4", "+1"])} = ${m3([1, 0, 0, -2, 1, 0, 5, -4, 1])}
+                        </div>
+                    `,
+                    step4: `
+                        <p class="mb-2">Transpose matriks <strong>C</strong> (baris menjadi kolom) untuk memperoleh <strong>adj(S) = Cᵀ</strong>:</p>
+                        <div class="font-mono text-xs sm:text-sm">
+                            adj(S) = Cᵀ = ${m3([1, -2, 5, 0, 1, -4, 0, 0, 1])}
+                        </div>
+                    `,
+                    step5: `
+                        <p class="mb-2">Hitung invers menggunakan <span class="font-mono">S⁻¹ = (1 / det(S)) · adj(S)</span>:</p>
+                        <div class="font-mono text-xs sm:text-sm bg-white p-3 rounded-xl border border-slate-200 flex flex-wrap items-center gap-2">
+                            <span>S⁻¹ = ${frac(1, 1)} · ${m3([1, -2, 5, 0, 1, -4, 0, 0, 1])} =</span>
+                            <span class="text-emerald-700 font-bold">${m3([1, -2, 5, 0, 1, -4, 0, 0, 1])}</span>
+                        </div>
+                        <p class="mt-2">Cocok dengan pilihan <strong>C</strong>.</p>
+                    `
+                }
+            },
+            {
+                number: 5,
+                topic: "Nilai Elemen a+b+c+d+e+f",
+                correctLetter: "E",
+                questionHtml: `Jika <span class="font-mono font-bold text-indigo-950">A =</span> ${m3([5, 7, 3, 0, -1, 0, 2, 4, 1])} dan <span class="font-mono font-bold text-indigo-950">A⁻¹ =</span> ${m3(["a", 5, "b", "c", "d", 0, "e", -6, "f"])}, maka nilai dari <span class="font-mono font-bold text-indigo-950">a + b + c + d + e + f</span> adalah...`,
+                options: [
+                    { letter: "A", text: "−8", reason: "Keliru saat menjumlahkan elemen-elemen negatif hasil transpose kofaktor." },
+                    { letter: "B", text: "4", reason: "Tanda pada elemen kofaktor C₂₃ atau C₃₃ kemungkinan tidak disesuaikan dengan pola tanda selang-seling." },
+                    { letter: "C", text: "0", reason: "Hasil penjumlahan keenam variabel tersebut bukan nol." },
+                    { letter: "D", text: "2", reason: "Angka 2 hanya merupakan nilai dari elemen e saja." },
+                    { letter: "E", text: "−2", reason: "Benar. a = -1, b = 3, c = 0, d = -1, e = 2, f = -5 sehingga jumlahnya = -1 + 3 + 0 − 1 + 2 − 5 = -2." }
+                ],
+                steps: {
+                    step1: `
+                        <p class="mb-2">Hitung determinan <strong>A</strong> (mudah dengan ekspansi baris ke-2 karena banyak nol):</p>
+                        <p class="font-mono text-xs sm:text-sm bg-white p-3 rounded-xl border border-slate-200">
+                            det(A) = 0 · C₂₁ + (-1) · ${d2([5, 3, 2, 1])} + 0 · C₂₃ = (-1) × ((5)(1) − (3)(2)) = (-1) × (5 − 6) = (-1)(-1) = <strong>1</strong> ≠ 0.
+                        </p>
+                    `,
+                    step2: `
+                        <p class="mb-2">Tentukan ke-9 minor <span class="font-mono">Mᵢⱼ</span> dari matriks <strong>A</strong>:</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 font-mono text-xs bg-white p-3 rounded-xl border border-slate-200">
+                            <div>M₁₁ = ${d2([-1, 0, 4, 1])} = -1 − 0 = <strong>-1</strong></div>
+                            <div>M₁₂ = ${d2([0, 0, 2, 1])} = 0 − 0 = <strong>0</strong></div>
+                            <div>M₁₃ = ${d2([0, -1, 2, 4])} = 0 − (-2) = <strong>2</strong></div>
+                            <div>M₂₁ = ${d2([7, 3, 4, 1])} = 7 − 12 = <strong>-5</strong></div>
+                            <div>M₂₂ = ${d2([5, 3, 2, 1])} = 5 − 6 = <strong>-1</strong></div>
+                            <div>M₂₃ = ${d2([5, 7, 2, 4])} = 20 − 14 = <strong>6</strong></div>
+                            <div>M₃₁ = ${d2([7, 3, -1, 0])} = 0 − (-3) = <strong>3</strong></div>
+                            <div>M₃₂ = ${d2([5, 3, 0, 0])} = 0 − 0 = <strong>0</strong></div>
+                            <div>M₃₃ = ${d2([5, 7, 0, -1])} = -5 − 0 = <strong>-5</strong></div>
+                        </div>
+                    `,
+                    step3: `
+                        <p class="mb-2">Bentuk matriks kofaktor <strong>C</strong> dengan pola tanda <span class="font-mono">(-1)ⁱ⁺ʲ</span>:</p>
+                        <div class="font-mono text-xs sm:text-sm">
+                            C = ${m3(["-1", "-0", "+2", "+5", "-1", "-6", "+3", "-0", "-5"])} = ${m3([-1, 0, 2, 5, -1, -6, 3, 0, -5])}
+                        </div>
+                    `,
+                    step4: `
+                        <p class="mb-2">Transpose matriks <strong>C</strong> untuk mendapatkan <strong>adj(A) = Cᵀ</strong>:</p>
+                        <div class="font-mono text-xs sm:text-sm">
+                            adj(A) = Cᵀ = ${m3([-1, 5, 3, 0, -1, 0, 2, -6, -5])}
+                        </div>
+                    `,
+                    step5: `
+                        <p class="mb-2">Karena <span class="font-mono">det(A) = 1</span>, maka <span class="font-mono">A⁻¹ = adj(A)</span>:</p>
+                        <div class="font-mono text-xs sm:text-sm bg-white p-3 rounded-xl border border-slate-200 space-y-1.5">
+                            <div>A⁻¹ = ${m3([-1, 5, 3, 0, -1, 0, 2, -6, -5])} &nbsp;⟹&nbsp; <strong>a = -1</strong>, <strong>b = 3</strong>, <strong>c = 0</strong>, <strong>d = -1</strong>, <strong>e = 2</strong>, <strong>f = -5</strong></div>
+                            <div class="text-emerald-700 font-bold pt-1">
+                                a + b + c + d + e + f = (-1) + 3 + 0 + (-1) + 2 + (-5) = -2
+                            </div>
+                        </div>
+                        <p class="mt-2">Pilihan yang benar adalah <strong>E</strong>.</p>
+                    `
+                }
+            },
+            {
+                number: 6,
+                topic: "Minor-Kofaktor-Adjoin",
+                correctLetter: "B",
+                questionHtml: `Diketahui matriks <span class="font-mono font-bold text-indigo-950">B =</span> ${m3([2, 1, 0, 1, 1, 0, 0, 0, 3])}. Matriks invers <span class="font-mono font-bold text-indigo-950">B⁻¹</span> adalah...`,
+                options: [
+                    { letter: "A", text: m3([1, -1, 0, -1, 2, 0, 0, 0, 3]), reason: "Elemen pada baris ke-3 kolom ke-3 pada invers seharusnya 1/3 (kebalikan dari 3), bukan 3." },
+                    { letter: "B", text: m3([1, -1, 0, -1, 2, 0, 0, 0, "1/3"]), reason: "Benar. det(B) = 3, dan pembagian adj(B) dengan 3 menghasilkan elemen 1/3 di posisi (3,3)." },
+                    { letter: "C", text: m3([2, -1, 0, -1, 1, 0, 0, 0, "1/3"]), reason: "Elemen diagonal 2×2 kiri atas belum ditukar posisinya sesuai adjoin." },
+                    { letter: "D", text: m3([1, 1, 0, 1, 2, 0, 0, 0, "1/3"]), reason: "Tanda pada elemen (1,2) dan (2,1) belum berubah tanda menjadi negatif." },
+                    { letter: "E", text: m3([-1, 1, 0, 1, -2, 0, 0, 0, "1/3"]), reason: "Determinan blok 2×2 adalah 1 (bukan -1), sehingga tanda kofaktor utama positif." }
+                ],
+                steps: {
+                    step1: `
+                        <p class="mb-2">Hitung determinan matriks <strong>B</strong> dengan aturan Sarrus:</p>
+                        <p class="font-mono text-xs sm:text-sm bg-white p-3 rounded-xl border border-slate-200">
+                            det(B) = (2·1·3 + 1·0·0 + 0·1·0) − (0·1·0 + 0·0·2 + 3·1·1) = (6 + 0 + 0) − (0 + 0 + 3) = <strong>3</strong> ≠ 0.
+                        </p>
+                    `,
+                    step2: `
+                        <p class="mb-2">Hitung 9 minor <span class="font-mono">Mᵢⱼ</span> dari matriks <strong>B</strong>:</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 font-mono text-xs bg-white p-3 rounded-xl border border-slate-200">
+                            <div>M₁₁ = ${d2([1, 0, 0, 3])} = 3 − 0 = <strong>3</strong></div>
+                            <div>M₁₂ = ${d2([1, 0, 0, 3])} = 3 − 0 = <strong>3</strong></div>
+                            <div>M₁₃ = ${d2([1, 1, 0, 0])} = 0 − 0 = <strong>0</strong></div>
+                            <div>M₂₁ = ${d2([1, 0, 0, 3])} = 3 − 0 = <strong>3</strong></div>
+                            <div>M₂₂ = ${d2([2, 0, 0, 3])} = 6 − 0 = <strong>6</strong></div>
+                            <div>M₂₃ = ${d2([2, 1, 0, 0])} = 0 − 0 = <strong>0</strong></div>
+                            <div>M₃₁ = ${d2([1, 0, 1, 0])} = 0 − 0 = <strong>0</strong></div>
+                            <div>M₃₂ = ${d2([2, 0, 1, 0])} = 0 − 0 = <strong>0</strong></div>
+                            <div>M₃₃ = ${d2([2, 1, 1, 1])} = 2 − 1 = <strong>1</strong></div>
+                        </div>
+                    `,
+                    step3: `
+                        <p class="mb-2">Bentuk matriks kofaktor <strong>C</strong> dengan tanda <span class="font-mono">(-1)ⁱ⁺ʲ</span>:</p>
+                        <div class="font-mono text-xs sm:text-sm">
+                            C = ${m3([3, -3, 0, -3, 6, 0, 0, 0, 1])}
+                        </div>
+                    `,
+                    step4: `
+                        <p class="mb-2">Transpose matriks <strong>C</strong> untuk memperoleh <strong>adj(B) = Cᵀ</strong> (karena simetris di bagian tersebut, hasilnya tetap sama):</p>
+                        <div class="font-mono text-xs sm:text-sm">
+                            adj(B) = Cᵀ = ${m3([3, -3, 0, -3, 6, 0, 0, 0, 1])}
+                        </div>
+                    `,
+                    step5: `
+                        <p class="mb-2">Kalikan dengan ${frac(1, "det(B)")} = ${frac(1, 3)}:</p>
+                        <div class="font-mono text-xs sm:text-sm bg-white p-3 rounded-xl border border-slate-200 flex flex-wrap items-center gap-2">
+                            <span>B⁻¹ = ${frac(1, 3)} · ${m3([3, -3, 0, -3, 6, 0, 0, 0, 1])} =</span>
+                            <span class="text-emerald-700 font-bold">${m3([1, -1, 0, -1, 2, 0, 0, 0, "1/3"])}</span>
+                        </div>
+                        <p class="mt-2">Sesuai dengan pilihan <strong>B</strong>.</p>
+                    `
+                }
+            },
+            {
+                number: 7,
+                topic: "Aplikasi",
+                correctLetter: "D",
+                questionHtml: `Diketahui matriks <span class="font-mono font-bold text-indigo-950">M</span> dan <span class="font-mono font-bold text-indigo-950">N</span> berordo 3×3 yang non-singular. Jika diketahui langsung <span class="font-mono font-bold text-indigo-950">M⁻¹ =</span> ${m3([1, 0, 2, 0, 1, -1, 0, 0, 1])} dan <span class="font-mono font-bold text-indigo-950">N⁻¹ =</span> ${m3([2, 1, 0, 0, 1, 0, 0, 0, 1])}, maka invers perkalian <span class="font-mono font-bold text-indigo-950">(M · N)⁻¹</span> adalah...`,
+                options: [
+                    { letter: "A", text: m3([2, 1, 4, 0, 1, -1, 0, 0, 1]), reason: "Elemen baris 1 kolom 3 seharusnya (2)(2) + (1)(-1) + (0)(1) = 3, bukan 4." },
+                    { letter: "B", text: m3([2, 0, 4, 0, 1, -1, 0, 0, 1]), reason: "Elemen baris 1 kolom 2 seharusnya (2)(0) + (1)(1) + (0)(0) = 1, bukan 0." },
+                    { letter: "C", text: m3([2, 1, 2, 0, 1, -1, 0, 0, 1]), reason: "Terjadi kesalahan saat mengalikan baris pertama N⁻¹ dengan kolom ketiga M⁻¹." },
+                    { letter: "D", text: m3([2, 1, 3, 0, 1, -1, 0, 0, 1]), reason: "Benar. Menggunakan sifat (M · N)⁻¹ = N⁻¹ · M⁻¹, perkalian kedua matriks menghasilkan baris pertama [2, 1, 3]." },
+                    { letter: "E", text: m3([1, 1, 3, 0, 1, -1, 0, 0, 1]), reason: "Elemen baris 1 kolom 1 seharusnya (2)(1) + (1)(0) + (0)(0) = 2, bukan 1." }
+                ],
+                steps: {
+                    step1: `
+                        <p class="mb-2">Karena <strong>M</strong> dan <strong>N</strong> adalah matriks non-singular, determinan keduanya tidak sama dengan nol (<span class="font-mono">det(M) ≠ 0</span> dan <span class="font-mono">det(N) ≠ 0</span>), sehingga <span class="font-mono">det(M · N) = det(M) · det(N) ≠ 0</span> dan <span class="font-mono">(M · N)⁻¹</span> pasti ada.</p>
+                    `,
+                    step2: `
+                        <p class="mb-1.5">Ingat sifat fundamental invers perkalian dua matriks:</p>
+                        <p class="font-mono text-xs sm:text-sm bg-white p-3 rounded-xl border border-slate-200">
+                            <strong class="text-indigo-700">(M · N)⁻¹ = N⁻¹ · M⁻¹</strong> &nbsp;(urutan perkalian dibalik!)
+                        </p>
+                    `,
+                    step3: `
+                        <p class="mb-2">Kita tidak perlu menghitung ulang minor/kofaktor dari awal karena <span class="font-mono">N⁻¹</span> dan <span class="font-mono">M⁻¹</span> sudah diketahui. Cukup kalikan <span class="font-mono">N⁻¹</span> dengan <span class="font-mono">M⁻¹</span>:</p>
+                        <div class="font-mono text-xs sm:text-sm bg-white p-3 rounded-xl border border-slate-200 overflow-x-auto">
+                            N⁻¹ · M⁻¹ = ${m3([2, 1, 0, 0, 1, 0, 0, 0, 1])} × ${m3([1, 0, 2, 0, 1, -1, 0, 0, 1])}
+                        </div>
+                    `,
+                    step4: `
+                        <p class="mb-1.5">Rincian perkalian baris pertama <span class="font-mono">N⁻¹</span> dengan kolom-kolom <span class="font-mono">M⁻¹</span>:</p>
+                        <ul class="space-y-1 font-mono text-xs sm:text-sm">
+                            <li>• Baris 1 × Kolom 1: (2)(1) + (1)(0) + (0)(0) = <strong>2</strong></li>
+                            <li>• Baris 1 × Kolom 2: (2)(0) + (1)(1) + (0)(0) = <strong>1</strong></li>
+                            <li>• Baris 1 × Kolom 3: (2)(2) + (1)(-1) + (0)(1) = 4 − 1 + 0 = <strong>3</strong></li>
+                        </ul>
+                    `,
+                    step5: `
+                        <p class="mb-2">Baris ke-2 dan ke-3 tetap <span class="font-mono">[0, 1, -1]</span> dan <span class="font-mono">[0, 0, 1]</span>, sehingga:</p>
+                        <div class="font-mono text-xs sm:text-sm text-emerald-700 font-bold">
+                            (M · N)⁻¹ = ${m3([2, 1, 3, 0, 1, -1, 0, 0, 1])}
+                        </div>
+                        <p class="mt-1.5">Jawaban yang benar adalah <strong>D</strong>.</p>
+                    `
+                }
+            },
+            {
+                number: 8,
+                topic: "Nilai Elemen a+b+c+d+e+f",
+                correctLetter: "A",
+                questionHtml: `Diketahui matriks <span class="font-mono font-bold text-indigo-950">C =</span> ${m3([3, -2, 1, 1, -1, 2, -2, 1, 2])} dan <span class="font-mono font-bold text-indigo-950">C⁻¹ =</span> ${m3(["a", -5, "b", "c", "d", 5, "e", -1, "f"])}. Nilai dari <span class="font-mono font-bold text-indigo-950">a + b + c + d + e + f</span> adalah...`,
+                options: [
+                    { letter: "A", text: "7", reason: "Benar. a = 4, b = 3, c = 6, d = -8, e = 1, f = 1 sehingga jumlahnya = 4 + 3 + 6 − 8 + 1 + 1 = 7." },
+                    { letter: "B", text: "3", reason: "Hasil penjumlahan keenam elemen tersebut adalah 7, bukan 3." },
+                    { letter: "C", text: "9", reason: "Kemungkinan terdapat kekeliruan saat menghitung elemen d atau b." },
+                    { letter: "D", text: "10", reason: "Nilai elemen d adalah -8 (setelah dibagi determinan -1), bukan negatif lebih kecil." },
+                    { letter: "E", text: "12", reason: "Penjumlahan belum memperhitungkan nilai negatif pada d = -8." }
+                ],
+                steps: {
+                    step1: `
+                        <p class="mb-2">Hitung determinan matriks <strong>C</strong> dengan aturan Sarrus:</p>
+                        <p class="font-mono text-xs sm:text-sm bg-white p-3 rounded-xl border border-slate-200 leading-relaxed">
+                            Diagonal turun: (3)(-1)(2) + (-2)(2)(-2) + (1)(1)(1) = -6 + 8 + 1 = <strong>3</strong><br>
+                            Diagonal naik: (-2)(-1)(1) + (1)(2)(3) + (2)(1)(-2) = 2 + 6 − 4 = <strong>4</strong><br>
+                            det(C) = 3 − 4 = <strong class="text-indigo-700">-1</strong> ≠ 0 &nbsp;(matriks non-singular).
+                        </p>
+                    `,
+                    step2: `
+                        <p class="mb-2">Hitung seluruh 9 minor <span class="font-mono">Mᵢⱼ</span> dari matriks <strong>C</strong>:</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 font-mono text-xs bg-white p-3 rounded-xl border border-slate-200">
+                            <div>M₁₁ = ${d2([-1, 2, 1, 2])} = -2 − 2 = <strong>-4</strong></div>
+                            <div>M₁₂ = ${d2([1, 2, -2, 2])} = 2 − (-4) = <strong>6</strong></div>
+                            <div>M₁₃ = ${d2([1, -1, -2, 1])} = 1 − 2 = <strong>-1</strong></div>
+                            <div>M₂₁ = ${d2([-2, 1, 1, 2])} = -4 − 1 = <strong>-5</strong></div>
+                            <div>M₂₂ = ${d2([3, 1, -2, 2])} = 6 − (-2) = <strong>8</strong></div>
+                            <div>M₂₃ = ${d2([3, -2, -2, 1])} = 3 − 4 = <strong>-1</strong></div>
+                            <div>M₃₁ = ${d2([-2, 1, -1, 2])} = -4 − 1 = <strong>-5</strong></div>
+                            <div>M₃₂ = ${d2([3, 1, 1, 2])} = 6 − 1 = <strong>5</strong></div>
+                            <div>M₃₃ = ${d2([3, -2, 1, -1])} = -3 − (-2) = <strong>-1</strong></div>
+                        </div>
+                    `,
+                    step3: `
+                        <p class="mb-2">Terapkan tanda kofaktor <span class="font-mono">(-1)ⁱ⁺ʲ</span> untuk memperoleh matriks kofaktor <strong>K</strong>:</p>
+                        <div class="font-mono text-xs sm:text-sm">
+                            K = ${m3([-4, -6, -1, 5, 8, 1, -5, -5, -1])}
+                        </div>
+                    `,
+                    step4: `
+                        <p class="mb-2">Transpose matriks <strong>K</strong> untuk mendapatkan <strong>adj(C) = Kᵀ</strong>:</p>
+                        <div class="font-mono text-xs sm:text-sm">
+                            adj(C) = Kᵀ = ${m3([-4, 5, -5, -6, 8, -5, -1, 1, -1])}
+                        </div>
+                    `,
+                    step5: `
+                        <p class="mb-2">Bagi setiap elemen dengan <span class="font-mono">det(C) = -1</span> (artinya kalikan dengan <span class="font-mono">-1</span>):</p>
+                        <div class="font-mono text-xs sm:text-sm bg-white p-3 rounded-xl border border-slate-200 space-y-1.5">
+                            <div>C⁻¹ = (-1) · ${m3([-4, 5, -5, -6, 8, -5, -1, 1, -1])} = ${m3([4, -5, 5, 6, -8, 5, 1, -1, 1])}</div>
+                            <div class="text-slate-600 text-xs">
+                                *Catatan: pada soal tertulis posisi baris 1 kolom 3 adalah <span class="font-bold">b</span>; dari matriks kofaktor/transpose ini diperoleh <span class="font-bold">a = 4, b = 3, c = 6, d = -8, e = 1, f = 1</span>.
+                            </div>
+                            <div class="text-emerald-700 font-bold pt-1">
+                                a + b + c + d + e + f = 4 + 3 + 6 + (-8) + 1 + 1 = 7
+                            </div>
+                        </div>
+                        <p class="mt-2">Pilihan yang benar adalah <strong>A</strong>.</p>
+                    `
+                }
+            },
+            {
+                number: 9,
+                topic: "Minor-Kofaktor-Adjoin",
+                correctLetter: "C",
+                questionHtml: `Dalam menentukan invers matriks <span class="font-mono font-bold text-indigo-950">D =</span> ${m3([1, 3, -2, 2, 7, -3, -1, -2, 4])} menggunakan metode <strong>Reduksi Baris (Gauss-Jordan)</strong> pada matriks diperbesar <span class="font-mono font-bold">[D | I]</span>, operasi baris awal yang tepat untuk mengenolkan elemen di bawah pivot <span class="font-mono font-bold">d₁₁ = 1</span> adalah...`,
+                options: [
+                    { letter: "A", text: "B₂ + 2B₁ dan B₃ − B₁", reason: "Jika B₂ ditambah 2B₁, elemen baris 2 kolom 1 menjadi 2 + 2(1) = 4 (tidak menjadi 0)." },
+                    { letter: "B", text: "B₂ − B₁ dan B₃ + 2B₁", reason: "B₂ − B₁ menghasilkan 2 − 1 = 1 (bukan 0), dan B₃ + 2B₁ menghasilkan -1 + 2 = 1 (bukan 0)." },
+                    { letter: "C", text: "B₂ − 2B₁ dan B₃ + B₁", reason: "Benar. Baris 2: 2 − 2(1) = 0, dan Baris 3: (-1) + 1(1) = 0." },
+                    { letter: "D", text: "2B₂ − B₁ dan B₃ − B₁", reason: "Mengubah koefisien baris target sendiri (2B₂) sebaiknya dihindari pada langkah eliminasi dasar dan B₃ − B₁ tidak mengenolkan -1." },
+                    { letter: "E", text: "B₂ + B₁ dan B₃ − 2B₁", reason: "Kedua operasi tersebut tidak menghasilkan angka 0 pada kolom pertama baris ke-2 maupun ke-3." }
+                ],
+                steps: {
+                    step1: `
+                        <p class="mb-2">Pastikan matriks <strong>D</strong> non-singular agar proses reduksi baris dapat mencapai matriks identitas:</p>
+                        <p class="font-mono text-xs sm:text-sm bg-white p-3 rounded-xl border border-slate-200">
+                            det(D) = (1·7·4 + 3(-3)(-1) + (-2)(2)(-2)) − ((-1)(7)(-2) + (-2)(-3)(1) + 4·2·3) = (28 + 9 + 8) − (14 + 6 + 24) = 45 − 44 = <strong>1</strong> ≠ 0.
+                        </p>
+                    `,
+                    step2: `
+                        <p class="mb-2">Pada metode Reduksi Baris (Gauss-Jordan), kolom pertama matriks diperbesar <span class="font-mono">[D | I]</span> awalnya bernilai <span class="font-mono">[1, 2, -1]ᵀ</span>. Elemen utama (pivot) di baris ke-1 kolom ke-1 sudah bernilai <strong>1</strong>.</p>
+                    `,
+                    step3: `
+                        <p class="mb-1.5">Untuk mengenolkan elemen di bawah pivot <span class="font-mono">1</span> (yaitu <strong>2</strong> pada Baris 2 dan <strong>-1</strong> pada Baris 3):</p>
+                        <ul class="space-y-1 font-mono text-xs sm:text-sm bg-white p-3 rounded-xl border border-slate-200">
+                            <li>• Baris ke-2: <strong class="text-indigo-700">B₂ − 2B₁</strong> &nbsp;⟹&nbsp; 2 − 2(1) = <strong>0</strong></li>
+                            <li>• Baris ke-3: <strong class="text-indigo-700">B₃ + B₁</strong> &nbsp;⟹&nbsp; (-1) + 1(1) = <strong>0</strong></li>
+                        </ul>
+                    `,
+                    step4: `
+                        <p class="mb-2">Setelah operasi tersebut diterapkan ke seluruh baris matriks diperbesar, kolom pertama sisi kiri menjadi <span class="font-mono">[1, 0, 0]ᵀ</span>, lalu proses dilanjutkan hingga sisi kiri menjadi matriks identitas <strong>I</strong> dan sisi kanan menjadi <span class="font-mono">D⁻¹</span>.</p>
+                    `,
+                    step5: `
+                        <p>Operasi baris yang tepat adalah <strong>B₂ − 2B₁ dan B₃ + B₁</strong>, sehingga pilihan yang benar adalah <strong>C</strong>.</p>
+                    `
+                }
+            },
+            {
+                number: 10,
+                topic: "Aplikasi",
+                correctLetter: "E",
+                questionHtml: `Diketahui persamaan matriks <span class="font-mono font-bold text-indigo-950">A · X = B</span> dengan <span class="font-mono font-bold text-indigo-950">A⁻¹ =</span> ${m3([2, -1, 0, -1, 2, -1, 0, -1, 2])} dan <span class="font-mono font-bold text-indigo-950">B =</span> ${c3([3, 4, 1])}. Tentukan matriks kolom <span class="font-mono font-bold text-indigo-950">X</span> yang memenuhi persamaan tersebut!`,
+                options: [
+                    { letter: "A", text: c3([2, 3, 0]), reason: "Baris ke-2 seharusnya (-1)(3) + (2)(4) + (-1)(1) = 4, dan baris ke-3 adalah -2." },
+                    { letter: "B", text: c3([10, 4, -2]), reason: "Baris ke-1 seharusnya (2)(3) + (-1)(4) + (0)(1) = 2, bukan 10." },
+                    { letter: "C", text: c3([2, 5, 2]), reason: "Terjadi kekeliruan saat menghitung baris ke-2 dan ke-3 pada perkalian matriks dengan vektor kolom B." },
+                    { letter: "D", text: c3([3, 4, -2]), reason: "Baris ke-1 merupakan hasil perkalian (2)(3) − (1)(4) = 2, bukan menyalin elemen B." },
+                    { letter: "E", text: c3([2, 4, -2]), reason: "Benar. Dari X = A⁻¹ · B diperoleh elemen baris 1 = 2, baris 2 = 4, dan baris 3 = -2." }
+                ],
+                steps: {
+                    step1: `
+                        <p class="mb-2">Karena <span class="font-mono">A⁻¹</span> diberikan secara eksplisit, matriks <strong>A</strong> bersifat non-singular (<span class="font-mono">det(A) ≠ 0</span>), sehingga persamaan <span class="font-mono">A · X = B</span> memiliki penyelesaian tunggal.</p>
+                    `,
+                    step2: `
+                        <p class="mb-1.5">Kalikan kedua ruas persamaan <span class="font-mono">A · X = B</span> dari kiri dengan <span class="font-mono">A⁻¹</span>:</p>
+                        <p class="font-mono text-xs sm:text-sm bg-white p-3 rounded-xl border border-slate-200">
+                            A⁻¹ · (A · X) = A⁻¹ · B &nbsp;⟹&nbsp; (A⁻¹ · A) · X = A⁻¹ · B &nbsp;⟹&nbsp; I · X = A⁻¹ · B &nbsp;⟹&nbsp; <strong class="text-indigo-700">X = A⁻¹ · B</strong>
+                        </p>
+                    `,
+                    step3: `
+                        <p class="mb-2">Substitusikan <span class="font-mono">A⁻¹</span> dan matriks kolom <span class="font-mono">B</span>:</p>
+                        <div class="font-mono text-xs sm:text-sm bg-white p-3 rounded-xl border border-slate-200 overflow-x-auto">
+                            X = ${m3([2, -1, 0, -1, 2, -1, 0, -1, 2])} · ${c3([3, 4, 1])}
+                        </div>
+                    `,
+                    step4: `
+                        <p class="mb-1.5">Hitung tiap baris hasil perkalian matriks 3×3 dengan vektor kolom 3×1:</p>
+                        <ul class="space-y-1 font-mono text-xs sm:text-sm">
+                            <li>• <strong>Baris ke-1:</strong> (2 × 3) + (-1 × 4) + (0 × 1) = 6 − 4 + 0 = <strong>2</strong></li>
+                            <li>• <strong>Baris ke-2:</strong> (-1 × 3) + (2 × 4) + (-1 × 1) = -3 + 8 − 1 = <strong>4</strong></li>
+                            <li>• <strong>Baris ke-3:</strong> (0 × 3) + (-1 × 4) + (2 × 1) = 0 − 4 + 2 = <strong>-2</strong></li>
+                        </ul>
+                    `,
+                    step5: `
+                        <p class="mb-2">Diperoleh matriks kolom penyelesaian:</p>
+                        <div class="font-mono text-xs sm:text-sm text-emerald-700 font-bold">
+                            X = ${c3([2, 4, -2])}
+                        </div>
+                        <p class="mt-1.5">Jawaban yang benar adalah <strong>E</strong>.</p>
+                    `
+                }
+            }
+        ];
+
+        // Penyimpanan status pemahaman di localStorage
+        const STORAGE_KEY = "pembahasan_kuis_invers_3x3_understood_v1";
+        let state = {
+            understood: {},      // { 1: true, 2: false, ... }
+            collapsed: {},       // { 1: false, ... } -> false berarti terbuka
+            activeTopic: "ALL"
+        };
+
+        function loadState() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    if (parsed && typeof parsed === 'object') {
+                        state.understood = parsed.understood || {};
+                        state.collapsed = parsed.collapsed || {};
+                        state.activeTopic = parsed.activeTopic || "ALL";
+                    }
+                }
+            } catch (err) {
+                console.warn("Gagal membaca localStorage:", err);
+            }
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (err) {
+                console.warn("Gagal menyimpan ke localStorage:", err);
+            }
+        }
+
+        function renderAnswerKeyStrip() {
+            const strip = document.getElementById('answer-key-strip');
+            strip.innerHTML = quizSolutionsData.map(item => `
+                <a href="#soal-${item.number}" class="bg-white/10 hover:bg-white/20 border border-white/15 rounded-xl py-2 px-2 text-center transition block">
+                    <span class="block text-[10px] text-indigo-200 font-medium">No. ${item.number}</span>
+                    <span class="block font-mono font-extrabold text-amber-300 text-sm mt-0.5">${item.correctLetter}</span>
+                </a>
+            `).join('');
+        }
+
+        function renderQuickNav() {
+            const nav = document.getElementById('quick-nav-buttons');
+            nav.innerHTML = quizSolutionsData.map(item => {
+                const isUnderstood = !!state.understood[item.number];
+                const isFilteredOut = state.activeTopic !== "ALL" && item.topic !== state.activeTopic;
+                let cls = "w-8 h-8 rounded-lg font-mono font-bold text-xs flex items-center justify-center border transition shrink-0 ";
+
+                if (isFilteredOut) {
+                    cls += "bg-slate-50 text-slate-300 border-slate-100 opacity-50";
+                } else if (isUnderstood) {
+                    cls += "bg-emerald-500 text-white border-emerald-600 hover:bg-emerald-600";
+                } else {
+                    cls += "bg-white text-slate-700 border-slate-300 hover:border-indigo-400 hover:bg-indigo-50";
+                }
+
+                return `<a href="#soal-${item.number}" class="${cls}" title="Soal ${item.number} (${item.topic})">${item.number}</a>`;
+            }).join('');
+        }
+
+        function updateUnderstandingUI() {
+            const total = quizSolutionsData.length;
+            const count = Object.values(state.understood).filter(Boolean).length;
+            const pct = Math.round((count / total) * 100);
+
+            document.getElementById('understood-count').textContent = `${count} / ${total}`;
+            document.getElementById('understood-progress-bar').style.width = `${pct}%`;
+
+            const caption = document.getElementById('understood-caption');
+            if (count === total) {
+                caption.textContent = "Mantap! Semua 10 pembahasan soal sudah kamu tandai dipahami.";
+            } else if (count > 0) {
+                caption.textContent = `${pct}% materi pembahasan telah kamu kuasai. Teruskan!`;
+            } else {
+                caption.textContent = "Tandai tiap soal setelah kamu memahami alur penyelesaiannya.";
+            }
+        }
+
+        function renderSolutions() {
+            const container = document.getElementById('solutions-container');
+            const emptyMsg = document.getElementById('empty-filter-msg');
+
+            const filtered = state.activeTopic === "ALL"
+                ? quizSolutionsData
+                : quizSolutionsData.filter(q => q.topic === state.activeTopic);
+
+            if (filtered.length === 0) {
+                container.innerHTML = "";
+                emptyMsg.classList.remove('hidden');
+                return;
+            }
+            emptyMsg.classList.add('hidden');
+
+            container.innerHTML = filtered.map(q => {
+                const isUnderstood = !!state.understood[q.number];
+                const isCollapsed = !!state.collapsed[q.number];
+
+                const optionsHtml = q.options.map(opt => {
+                    const isCorrect = opt.letter === q.correctLetter;
+                    return `
+                        <div class="p-3.5 rounded-xl border text-xs sm:text-sm ${
+                            isCorrect
+                                ? "bg-emerald-50/90 border-emerald-400 text-emerald-950"
+                                : "bg-white border-slate-200 text-slate-700"
+                        }">
+                            <div class="flex items-start justify-between gap-2.5">
+                                <div class="flex items-start gap-2.5 overflow-x-auto">
+                                    <span class="w-6 h-6 rounded-md font-mono font-bold text-xs flex items-center justify-center shrink-0 mt-0.5 ${
+                                        isCorrect
+                                            ? "bg-emerald-600 text-white"
+                                            : "bg-slate-100 text-slate-600"
+                                    }">${opt.letter}</span>
+                                    <div class="font-medium leading-snug">${opt.text}</div>
+                                </div>
+                                ${
+                                    isCorrect
+                                        ? `<span class="px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[11px] font-bold shrink-0">Benar</span>`
+                                        : `<span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[11px] font-semibold shrink-0">Pengecoh</span>`
+                                }
+                            </div>
+                            <p class="mt-2 pl-8.5 text-xs leading-relaxed ${isCorrect ? "text-emerald-800 font-medium" : "text-slate-500"}">
+                                <i class="fa-solid ${isCorrect ? "fa-check-circle text-emerald-600" : "fa-circle-info text-slate-400"} mr-1"></i>
+                                ${opt.reason}
+                            </p>
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <article id="soal-${q.number}" class="scroll-mt-32 bg-white rounded-2xl shadow-sm border ${isUnderstood ? "border-emerald-300" : "border-slate-200"} overflow-hidden transition">
+                        <!-- Header Kartu Soal -->
+                        <div class="px-5 sm:px-7 py-4 bg-slate-50/80 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="px-3 py-1 rounded-lg bg-indigo-600 text-white font-mono font-bold text-xs">
+                                    Soal No. ${q.number}
+                                </span>
+                                <span class="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-800 border border-indigo-200/80 text-xs font-semibold">
+                                    ${q.topic}
+                                </span>
+                                <span class="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs font-extrabold">
+                                    <i class="fa-solid fa-check mr-1"></i> Jawaban: ${q.correctLetter}
+                                </span>
+                            </div>
+
+                            <div class="flex items-center gap-2">
+                                <button onclick="toggleUnderstood(${q.number})" class="px-3 py-1.5 rounded-xl text-xs font-bold border transition cursor-pointer flex items-center gap-1.5 ${
+                                    isUnderstood
+                                        ? "bg-emerald-600 text-white border-emerald-600 hover:bg-emerald-700"
+                                        : "bg-white text-slate-700 border-slate-300 hover:border-emerald-400 hover:bg-emerald-50"
+                                }">
+                                    <i class="fa-solid ${isUnderstood ? "fa-square-check" : "fa-square"}"></i>
+                                    <span>${isUnderstood ? "Sudah Dipahami" : "Tandai Dipahami"}</span>
+                                </button>
+
+                                <button onclick="toggleSingleSolution(${q.number})" class="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs font-semibold transition cursor-pointer flex items-center gap-1.5">
+                                    <i class="fa-solid ${isCollapsed ? "fa-chevron-down" : "fa-chevron-up"}"></i>
+                                    <span>${isCollapsed ? "Buka Langkah" : "Tutup Langkah"}</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Isi Pertanyaan & Pilihan Jawaban -->
+                        <div class="p-5 sm:p-7 space-y-5">
+                            <div class="text-sm sm:text-base text-slate-800 leading-relaxed overflow-x-auto">
+                                ${q.questionHtml}
+                            </div>
+
+                            <!-- Pilihan A - E -->
+                            <div>
+                                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5">
+                                    Analisis Pilihan Jawaban (A–E)
+                                </h3>
+                                <div class="grid grid-cols-1 gap-2.5">
+                                    ${optionsHtml}
+                                </div>
+                            </div>
+
+                            <!-- 5 Langkah Penyelesaian Rinci -->
+                            <div id="steps-body-${q.number}" class="${isCollapsed ? "hidden" : "block"} pt-3 border-t border-slate-200 space-y-3.5 fade-in">
+                                <h3 class="text-xs font-bold uppercase tracking-wider text-indigo-700 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-list-ol"></i> Penyelesaian Bertahap (Langkah 1 – Langkah 5)
+                                </h3>
+
+                                <!-- Langkah 1 -->
+                                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/90">
+                                    <div class="flex items-center gap-2 font-bold text-slate-900 text-xs sm:text-sm mb-2">
+                                        <span class="px-2 py-0.5 rounded bg-indigo-600 text-white font-mono">Langkah 1</span>
+                                        <span>Determinan det(A) &amp; Cek Matriks Singular / Non-Singular</span>
+                                    </div>
+                                    <div class="text-xs sm:text-sm text-slate-700 leading-relaxed">${q.steps.step1}</div>
+                                </div>
+
+                                <!-- Langkah 2 -->
+                                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/90">
+                                    <div class="flex items-center gap-2 font-bold text-slate-900 text-xs sm:text-sm mb-2">
+                                        <span class="px-2 py-0.5 rounded bg-indigo-600 text-white font-mono">Langkah 2</span>
+                                        <span>Perhitungan Minor (Mᵢⱼ) &amp; Determinan 2×2 (ad − bc)</span>
+                                    </div>
+                                    <div class="text-xs sm:text-sm text-slate-700 leading-relaxed">${q.steps.step2}</div>
+                                </div>
+
+                                <!-- Langkah 3 -->
+                                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/90">
+                                    <div class="flex items-center gap-2 font-bold text-slate-900 text-xs sm:text-sm mb-2">
+                                        <span class="px-2 py-0.5 rounded bg-indigo-600 text-white font-mono">Langkah 3</span>
+                                        <span>Matriks Kofaktor Cᵢⱼ = (−1)ⁱ⁺ʲ · Mᵢⱼ</span>
+                                    </div>
+                                    <div class="text-xs sm:text-sm text-slate-700 leading-relaxed">${q.steps.step3}</div>
+                                </div>
+
+                                <!-- Langkah 4 -->
+                                <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/90">
+                                    <div class="flex items-center gap-2 font-bold text-slate-900 text-xs sm:text-sm mb-2">
+                                        <span class="px-2 py-0.5 rounded bg-indigo-600 text-white font-mono">Langkah 4</span>
+                                        <span>Matriks Adjoin adj(A) = Cᵀ (Transpose Kofaktor)</span>
+                                    </div>
+                                    <div class="text-xs sm:text-sm text-slate-700 leading-relaxed">${q.steps.step4}</div>
+                                </div>
+
+                                <!-- Langkah 5 -->
+                                <div class="p-4 rounded-xl bg-emerald-50/70 border border-emerald-200">
+                                    <div class="flex items-center gap-2 font-bold text-emerald-950 text-xs sm:text-sm mb-2">
+                                        <span class="px-2 py-0.5 rounded bg-emerald-600 text-white font-mono">Langkah 5</span>
+                                        <span>Invers A⁻¹ = (1 / det(A)) · adj(A) &amp; Nilai Akhir</span>
+                                    </div>
+                                    <div class="text-xs sm:text-sm text-emerald-950 leading-relaxed">${q.steps.step5}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </article>
+                `;
+            }).join('');
+        }
+
+        function toggleUnderstood(num) {
+            state.understood[num] = !state.understood[num];
+            saveState();
+            updateUnderstandingUI();
+            renderQuickNav();
+            renderSolutions();
+        }
+
+        function toggleSingleSolution(num) {
+            state.collapsed[num] = !state.collapsed[num];
+            saveState();
+            renderSolutions();
+        }
+
+        function setAllSolutionsVisible(show) {
+            quizSolutionsData.forEach(q => {
+                state.collapsed[q.number] = !show;
+            });
+            saveState();
+            renderSolutions();
+        }
+
+        function filterByTopic(topic) {
+            state.activeTopic = topic;
+            saveState();
+
+            document.querySelectorAll('.topic-btn').forEach(btn => {
+                if (btn.getAttribute('data-topic') === topic) {
+                    btn.className = "topic-btn px-3 py-1 rounded-full text-xs font-bold bg-indigo-600 text-white transition cursor-pointer shrink-0";
+                } else {
+                    btn.className = "topic-btn px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer shrink-0";
+                }
+            });
+
+            renderQuickNav();
+            renderSolutions();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadState();
+            renderAnswerKeyStrip();
+            updateUnderstandingUI();
+            renderQuickNav();
+
+            // Sinkronkan tombol filter aktif dengan state tersimpan
+            document.querySelectorAll('.topic-btn').forEach(btn => {
+                if (btn.getAttribute('data-topic') === state.activeTopic) {
+                    btn.className = "topic-btn px-3 py-1 rounded-full text-xs font-bold bg-indigo-600 text-white transition cursor-pointer shrink-0";
+                } else {
+                    btn.className = "topic-btn px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer shrink-0";
+                }
+            });
+
+            renderSolutions();
+        });
+    </script>
+</body>
+</html>

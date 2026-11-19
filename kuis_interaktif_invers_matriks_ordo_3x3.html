@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Interaktif: Invers Matriks Ordo 3×3 (10 Soal)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome untuk Ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Styling kurung matriks matematis */
+        .matrix-bracket {
+            display: inline-flex;
+            align-items: center;
+            position: relative;
+            padding: 2px 8px;
+            margin: 0 4px;
+            font-family: 'JetBrains Mono', monospace;
+            vertical-align: middle;
+        }
+        .matrix-bracket::before,
+        .matrix-bracket::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            border: 2px solid currentColor;
+        }
+        .matrix-bracket::before {
+            left: 0;
+            border-right: none;
+            border-radius: 4px 0 0 4px;
+        }
+        .matrix-bracket::after {
+            right: 0;
+            border-left: none;
+            border-radius: 0 4px 4px 0;
+        }
+        .matrix-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(28px, auto));
+            gap: 4px 12px;
+            text-align: center;
+        }
+        .fade-in {
+            animation: fadeIn 0.35s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen flex flex-col justify-between selection:bg-indigo-100 selection:text-indigo-900">
+
+    <!-- Header Kuis -->
+    <header class="bg-gradient-to-r from-indigo-900 via-indigo-800 to-violet-900 text-white shadow-md">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="flex items-center gap-3.5">
+                <div class="w-11 h-11 rounded-xl bg-amber-400 text-slate-950 font-extrabold flex items-center justify-center text-lg shadow-md shrink-0">
+                    A⁻¹
+                </div>
+                <div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <h1 class="text-lg sm:text-xl font-extrabold tracking-tight">Kuis Interaktif: Invers Matriks 3×3</h1>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/20 text-emerald-200 border border-emerald-400/30">
+                            <i class="fa-solid fa-shield-halved"></i> Auto-Save Aktif
+                        </span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-indigo-200 mt-0.5">10 Soal Pilihan Ganda • Umpan Balik Langsung • Tahan Refresh & Offline</p>
+                </div>
+            </div>
+
+            <!-- Panel Skor & Tombol Reset -->
+            <div class="flex items-center gap-3 self-start sm:self-auto">
+                <div class="bg-white/10 backdrop-blur-sm border border-white/15 px-4 py-2 rounded-xl text-xs sm:text-sm flex items-center gap-3">
+                    <div>
+                        <span class="text-indigo-200">Progres:</span>
+                        <strong id="quiz-answered-count" class="font-mono text-white ml-1">0/10</strong>
+                    </div>
+                    <span class="text-white/25">|</span>
+                    <div>
+                        <span class="text-indigo-200">Skor:</span>
+                        <strong id="quiz-score-display" class="font-mono text-amber-300 text-base ml-1">0</strong>
+                    </div>
+                </div>
+                <button onclick="openResetModal()" class="px-3.5 py-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500 text-rose-100 hover:text-white border border-rose-400/30 text-xs font-bold transition cursor-pointer" title="Reset Semua Jawaban">
+                    <i class="fa-solid fa-rotate-right mr-1"></i> Reset
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Konten Utama Kuis -->
+    <main class="max-w-5xl w-full mx-auto px-4 sm:px-6 py-8 flex-1">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- Kolom Kiri: Navigasi Nomor Soal & Ringkasan Skor -->
+            <aside class="lg:col-span-4 space-y-4">
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+                    <div class="flex items-center justify-between mb-3.5">
+                        <h2 class="text-xs font-bold uppercase tracking-wider text-slate-600">Navigasi Nomor Soal</h2>
+                        <span id="quiz-status-badge" class="text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md">Soal 1 / 10</span>
+                    </div>
+
+                    <!-- Grid Tombol 1-10 -->
+                    <div id="quiz-nav-grid" class="grid grid-cols-5 gap-2">
+                        <!-- Dirender otomatis oleh JS -->
+                    </div>
+
+                    <!-- Legenda Indikator Warna -->
+                    <div class="mt-5 pt-4 border-t border-slate-100 grid grid-cols-2 gap-2.5 text-xs text-slate-600">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3.5 h-3.5 rounded bg-indigo-600 inline-block shrink-0"></span>
+                            <span>Sedang dibuka</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3.5 h-3.5 rounded bg-white border border-slate-300 inline-block shrink-0"></span>
+                            <span>Belum dijawab</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3.5 h-3.5 rounded bg-emerald-500 inline-block shrink-0"></span>
+                            <span>Jawaban Benar</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3.5 h-3.5 rounded bg-rose-500 inline-block shrink-0"></span>
+                            <span>Jawaban Salah</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kartu Hasil Akhir (Muncul otomatis setelah 10 soal terisi) -->
+                <div id="quiz-summary-card" class="hidden bg-gradient-to-br from-indigo-900 to-violet-900 text-white rounded-2xl p-5 shadow-md border border-indigo-700 fade-in">
+                    <div class="flex items-center gap-2 text-amber-300 font-bold text-sm mb-1.5">
+                        <i class="fa-solid fa-trophy text-base"></i> Evaluasi Selesai!
+                    </div>
+                    <p class="text-xs text-indigo-100 mb-4">Seluruh 10 soal invers matriks ordo 3×3 telah kamu kerjakan.</p>
+                    <div class="bg-white/10 border border-white/15 rounded-xl p-3.5 flex justify-between items-center mb-3">
+                        <span class="text-xs font-medium text-indigo-100">Nilai Akhir:</span>
+                        <span id="quiz-final-grade" class="text-2xl font-extrabold text-amber-300 font-mono">0 / 100</span>
+                    </div>
+                    <p id="quiz-final-message" class="text-xs text-indigo-100 leading-relaxed"></p>
+                </div>
+            </aside>
+
+            <!-- Kolom Kanan: Area Soal Aktif & Pilihan Ganda -->
+            <section class="lg:col-span-8 space-y-4">
+                <div id="quiz-question-box" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-7 space-y-5">
+                    <!-- Konten soal aktif & opsi A-E dirender otomatis oleh JS -->
+                </div>
+
+                <!-- Kontrol Navigasi Bawah -->
+                <div class="flex items-center justify-between gap-3 bg-white rounded-2xl shadow-sm border border-slate-200 p-3.5 sm:px-5">
+                    <button id="btn-prev-quiz" onclick="navigateQuiz(-1)" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs sm:text-sm transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+                        <i class="fa-solid fa-arrow-left mr-1.5"></i> Sebelumnya
+                    </button>
+
+                    <span class="text-[11px] sm:text-xs text-slate-500 text-center flex items-center gap-1.5">
+                        <i class="fa-solid fa-cloud-arrow-up text-emerald-600"></i>
+                        <span>Jawaban tersimpan otomatis</span>
+                    </span>
+
+                    <button id="btn-next-quiz" onclick="navigateQuiz(1)" class="px-4 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs sm:text-sm transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+                        Selanjutnya <i class="fa-solid fa-arrow-right ml-1.5"></i>
+                    </button>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Modal Konfirmasi Reset Kuis (Pengganti confirm() bawaan browser) -->
+    <div id="reset-modal" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 fade-in">
+            <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-xl mb-4">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 class="text-lg font-bold text-slate-900 mb-2">Ulangi Kuis dari Awal?</h3>
+            <p class="text-sm text-slate-600 mb-6">Semua jawaban yang sudah tersimpan pada kuis 10 soal ini akan dihapus sehingga kamu dapat mengerjakannya ulang dari nomor 1.</p>
+            <div class="flex justify-end gap-3">
+                <button onclick="closeResetModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm transition cursor-pointer">
+                    Batal
+                </button>
+                <button onclick="confirmResetQuiz()" class="px-4 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-semibold text-sm transition cursor-pointer">
+                    Ya, Reset Jawaban
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center text-xs text-slate-400 py-5 px-4">
+        Kuis Evaluasi Mandiri — Materi Invers Matriks Persegi Ordo 3×3
+    </footer>
+
+    <!-- =========================================================
+         LOGIKA JAVASCRIPT KUIS & PENYIMPANAN OTOMATIS
+    ========================================================== -->
+    <script>
+        // Kunci jawaban tersebar seimbang dan acak (masing-masing 2 kali untuk A, B, C, D, E):
+        // No 1: B | No 2: D | No 3: A | No 4: C | No 5: E | No 6: B | No 7: D | No 8: A | No 9: C | No 10: E
+        const quizQuestions = [
+            {
+                id: 1,
+                topic: "Determinan Matriks 3×3",
+                prompt: `Diketahui matriks <span class="font-mono font-bold">P =</span>
+                    <span class="matrix-bracket"><span class="matrix-grid-3">
+                        <span>2</span><span>-1</span><span>3</span>
+                        <span>1</span><span>4</span><span>0</span>
+                        <span>-2</span><span>1</span><span>1</span>
+                    </span></span>. Nilai dari <span class="font-mono font-bold">det(P)</span> adalah...`,
+                options: [
+                    "11",
+                    "36", // B (Benar)
+                    "24",
+                    "-14",
+                    "31"
+                ],
+                correctIndex: 1,
+                explanation: "Dengan aturan Sarrus: diagonal turun = (2·4·1) + (-1·0·(-2)) + (3·1·1) = 8 + 0 + 3 = 11. Diagonal naik = (-2·4·3) + (1·0·2) + (1·1·(-1)) = -24 + 0 − 1 = -25. Maka det(P) = 11 − (-25) = 36."
+            },
+            {
+                id: 2,
+                topic: "Syarat Matriks Singular",
+                prompt: `Agar matriks <span class="font-mono font-bold">Q =</span>
+                    <span class="matrix-bracket"><span class="matrix-grid-3">
+                        <span>k</span><span>1</span><span>2</span>
+                        <span>1</span><span>2</span><span>1</span>
+                        <span>3</span><span>1</span><span>2</span>
+                    </span></span> tidak mempunyai invers (matriks singular), maka nilai <span class="font-mono font-bold">k</span> yang memenuhi adalah...`,
+                options: [
+                    "1",
+                    "2",
+                    "-3",
+                    "3", // D (Benar)
+                    "0"
+                ],
+                correctIndex: 3,
+                explanation: "Syarat matriks singular adalah det(Q) = 0. Menggunakan ekspansi baris pertama: k(4 − 1) − 1(2 − 3) + 2(1 − 6) = 0 ⇒ 3k + 1 − 10 = 0 ⇒ 3k = 9 ⇒ k = 3."
+            },
+            {
+                id: 3,
+                topic: "Elemen Kofaktor Matriks",
+                prompt: `Diberikan matriks <span class="font-mono font-bold">R =</span>
+                    <span class="matrix-bracket"><span class="matrix-grid-3">
+                        <span>4</span><span>-2</span><span>1</span>
+                        <span>3</span><span>5</span><span>-1</span>
+                        <span>2</span><span>0</span><span>3</span>
+                    </span></span>. Nilai kofaktor <span class="font-mono font-bold">C₂₃</span> dari matriks R adalah...`,
+                options: [
+                    "-4", // A (Benar)
+                    "4",
+                    "-14",
+                    "14",
+                    "-2"
+                ],
+                correctIndex: 0,
+                explanation: "Minor M₂₃ diperoleh dengan menutup baris ke-2 dan kolom ke-3, menyisakan det([[4, -2], [2, 0]]) = (4)(0) − (-2)(2) = 4. Karena posisi (2,3) bertanda negatif (-1)²⁺³ = -1, maka C₂₃ = -4."
+            },
+            {
+                id: 4,
+                topic: "Invers Matriks Segitiga Atas",
+                prompt: `Tentukan matriks invers dari <span class="font-mono font-bold">S =</span>
+                    <span class="matrix-bracket"><span class="matrix-grid-3">
+                        <span>1</span><span>2</span><span>3</span>
+                        <span>0</span><span>1</span><span>4</span>
+                        <span>0</span><span>0</span><span>1</span>
+                    </span></span>!`,
+                options: [
+                    `<span class="matrix-bracket"><span class="matrix-grid-3"><span>1</span><span>-2</span><span>-3</span><span>0</span><span>1</span><span>-4</span><span>0</span><span>0</span><span>1</span></span></span>`,
+                    `<span class="matrix-bracket"><span class="matrix-grid-3"><span>1</span><span>2</span><span>-5</span><span>0</span><span>1</span><span>4</span><span>0</span><span>0</span><span>1</span></span></span>`,
+                    `<span class="matrix-bracket"><span class="matrix-grid-3"><span>1</span><span>-2</span><span>5</span><span>0</span><span>1</span><span>-4</span><span>0</span><span>0</span><span>1</span></span></span>`, // C (Benar)
+                    `<span class="matrix-bracket"><span class="matrix-grid-3"><span>1</span><span>-2</span><span>8</span><span>0</span><span>1</span><span>-4</span><span>0</span><span>0</span><span>1</span></span></span>`,
+                    `<span class="matrix-bracket"><span class="matrix-grid-3"><span>1</span><span>2</span><span>5</span><span>0</span><span>1</span><span>4</span><span>0</span><span>0</span><span>1</span></span></span>`
+                ],
+                correctIndex: 2,
+                explanation: "det(S) = 1·1·1 = 1. Kofaktor C₃₁ = det([[2,3],[1,4]]) = 8 − 3 = 5. Setelah ditranspose menjadi posisi baris 1 kolom 3 pada adj(S), sehingga elemen (1,3) pada S⁻¹ adalah 5."
+            },
+            {
+                id: 5,
+                topic: "Penjumlahan Elemen Invers",
+                prompt: `Jika <span class="font-mono font-bold">A =</span>
+                    <span class="matrix-bracket"><span class="matrix-grid-3">
+                        <span>5</span><span>7</span><span>3</span>
+                        <span>0</span><span>-1</span><span>0</span>
+                        <span>2</span><span>4</span><span>1</span>
+                    </span></span> dan <span class="font-mono font-bold">A⁻¹ =</span>
+                    <span class="matrix-bracket"><span class="matrix-grid-3">
+                        <span>a</span><span>5</span><span>b</span>
+                        <span>c</span><span>d</span><span>0</span>
+                        <span>e</span><span>-6</span><span>f</span>
+                    </span></span>, maka nilai <span class="font-mono font-bold">a + b + c + d + e + f</span> adalah...`,
+                options: [
+                    "-8",
+                    "4",
+                    "0",
+                    "2",
+                    "-2" // E (Benar)
+                ],
+                correctIndex: 4,
+                explanation: "det(A) = 5(-1)(1) − 3(-1)(2) = -5 + 6 = 1. Kofaktor ditranspose menghasilkan A⁻¹ = [[-1, 5, 3], [0, -1, 0], [2, -6, -5]]. Jadi a = -1, b = 3, c = 0, d = -1, e = 2, f = -5. Jumlahnya = -1 + 3 + 0 + (-1) + 2 + (-5) = -2."
+            },
+            {
+                id: 6,
+                topic: "Invers Matriks Ordo 3×3 (Metode Adjoin)",
+                prompt: `Diketahui matriks <span class="font-mono font-bold">B =</span>
+                    <span class="matrix-bracket"><span class="matrix-grid-3">
+                        <span>2</span><span>1</span><span>0</span>
+                        <span>1</span><span>1</span><span>0</span>
+                        <span>0</span><span>0</span><span>3</span>
+                    </span></span>. Invers dari matriks B adalah...`,
+                options: [
+                    `<span class="matrix-bracket"><span class="matrix-grid-3"><span>1</span><span>-1</span><span>0</span><span>-1</span><span>2</span><span>0</span><span>0</span><span>0</span><span>3</span></span></span>`,
+                    `<span class="matrix-bracket"><span class="matrix-grid-3"><span>1</span><span>-1</span><span>0</span><span>-1</span><span>2</span><span>0</span><span>0</span><span>0</span><span>1/3</span></span></span>`, // B (Benar)
+                    `<span class="matrix-bracket"><span class="matrix-grid-3"><span>2</span><span>-1</span><span>0</span><span>-1</span><span>1</span><span>0</span><span>0</span><span>0</span><span>1/3</span></span></span>`,
+                    `<span class="matrix-bracket"><span class="matrix-grid-3"><span>1</span><span>1</span><span>0</span><span>1</span><span>2</span><span>0</span><span>0</span><span>0</span><span>1/3</span></span></span>`,
+                    `<span class="matrix-bracket"><span class="matrix-grid-3"><span>-1</span><span>1</span><span>0</span><span>1</span><span>-2</span><span>0</span><span>0</span><span>0</span><span>1/3</span></span></span>`
+                ],
+                correctIndex: 1,
+                explanation: "Matriks B berbentuk blok diagonal: blok 2×2 [[2,1],[1,1]] memiliki det = 1 dan invers [[1,-1],[-1,2]], sedangkan elemen pojok kanan bawah [3] memiliki invers 1/3."
+            },
+            {
+                id: 7,
+                topic: "Sifat Perkalian Invers Matriks",
+                prompt: `Diketahui matriks <span class="font-mono font-bold">M</span> dan <span class="font-mono font-bold">N</span> berordo 3×3 yang non-singular. Jika <span class="font-mono font-bold">M⁻¹ =</span>
+                    <span class="matrix-bracket"><span class="matrix-grid-3">
+                        <span>1</span><span>0</span><span>2</span>
+                        <span>0</span><span>1</span><span>-1</span>
+                        <span>0</span><span>0</span><span>1</span>
+                    </span></span> dan <span class="font-mono font-bold">N⁻¹ =</span>
+                    <span class="matrix-bracket"><span class="matrix-grid-3">
+                        <span>2</span><span>1</span><span>0</span>
+                        <span>0</span><span>1</span><span>0</span>
+                        <span>0</span><span>0</span><span>1</span>
+                    </span></span>, maka <span class="font-mono font-bold">(M · N)⁻¹</span> adalah...`,
+                options: [
+                    `<span class="matrix-bracket"><span class="matrix-grid-3"><span>2</span><span>1</span><span>4</span><span>0</span><span>1</span><span>-1</span><span>0</span><span>0</span><span>1</span></span></span>`,
+                    `<span class="matrix-bracket"><span class="matrix-grid-3"><span>2</span><span>0</span><span>4</span><span>0</span><span>1</span><span>-1</span><span>0</span><span>0</span><span>1</span></span></span>`,
+                    `<span class="matrix-bracket"><span class="matrix-grid-3"><span>2</span><span>1</span><span>2</span><span>0</span><span>1</span><span>-1</span><span>0</span><span>0</span><span>1</span></span></span>`,
+                    `<span class="matrix-bracket"><span class="matrix-grid-3"><span>2</span><span>1</span><span>3</span><span>0</span><span>1</span><span>-1</span><span>0</span><span>0</span><span>1</span></span></span>`, // D (Benar)
+                    `<span class="matrix-bracket"><span class="matrix-grid-3"><span>1</span><span>1</span><span>3</span><span>0</span><span>1</span><span>-1</span><span>0</span><span>0</span><span>1</span></span></span>`
+                ],
+                correctIndex: 3,
+                explanation: "Gunakan sifat invers hasil kali matriks: (M · N)⁻¹ = N⁻¹ · M⁻¹ (urutan dibalik). Kalikan N⁻¹ dengan M⁻¹ sehingga baris 1 kolom 3 menjadi (2)(2) + (1)(-1) + (0)(1) = 3."
+            },
+            {
+                id: 8,
+                topic: "Penjumlahan Elemen Invers",
+                prompt: `Diketahui matriks <span class="font-mono font-bold">C =</span>
+                    <span class="matrix-bracket"><span class="matrix-grid-3">
+                        <span>3</span><span>-2</span><span>1</span>
+                        <span>1</span><span>-1</span><span>2</span>
+                        <span>-2</span><span>1</span><span>2</span>
+                    </span></span> dan <span class="font-mono font-bold">C⁻¹ =</span>
+                    <span class="matrix-bracket"><span class="matrix-grid-3">
+                        <span>a</span><span>-5</span><span>b</span>
+                        <span>c</span><span>d</span><span>5</span>
+                        <span>e</span><span>-1</span><span>f</span>
+                    </span></span>. Nilai dari <span class="font-mono font-bold">a + b + c + d + e + f</span> adalah...`,
+                options: [
+                    "7", // A (Benar)
+                    "3",
+                    "9",
+                    "10",
+                    "12"
+                ],
+                correctIndex: 0,
+                explanation: "det(C) = 3(-2−2) − (-2)(2+4) + 1(1−2) = -12 + 12 − 1 = -1. Matriks kofaktor dibagi -1 menghasilkan C⁻¹ = [[4, -5, 3], [6, -8, 5], [1, -1, 1]]. Maka a + b + c + d + e + f = 4 + 3 + 6 + (-8) + 1 + 1 = 7."
+            },
+            {
+                id: 9,
+                topic: "Invers Matriks Diagonal",
+                prompt: `Tentukan matriks invers dari matriks diagonal <span class="font-mono font-bold">K =</span>
+                    <span class="matrix-bracket"><span class="matrix-grid-3">
+                        <span>4</span><span>0</span><span>0</span>
+                        <span>0</span><span>-2</span><span>0</span>
+                        <span>0</span><span>0</span><span>5</span>
+                    </span></span>!`,
+                options: [
+                    `<span class="matrix-bracket"><span class="matrix-grid-3"><span>-4</span><span>0</span><span>0</span><span>0</span><span>2</span><span>0</span><span>0</span><span>0</span><span>-5</span></span></span>`,
+                    `<span class="matrix-bracket"><span class="matrix-grid-3"><span>1/4</span><span>0</span><span>0</span><span>0</span><span>1/2</span><span>0</span><span>0</span><span>0</span><span>1/5</span></span></span>`,
+                    `<span class="matrix-bracket"><span class="matrix-grid-3"><span>1/4</span><span>0</span><span>0</span><span>0</span><span>-1/2</span><span>0</span><span>0</span><span>0</span><span>1/5</span></span></span>`, // C (Benar)
+                    `<span class="matrix-bracket"><span class="matrix-grid-3"><span>4</span><span>0</span><span>0</span><span>0</span><span>-2</span><span>0</span><span>0</span><span>0</span><span>5</span></span></span>`,
+                    `<span class="matrix-bracket"><span class="matrix-grid-3"><span>1/5</span><span>0</span><span>0</span><span>0</span><span>-1/2</span><span>0</span><span>0</span><span>0</span><span>1/4</span></span></span>`
+                ],
+                correctIndex: 2,
+                explanation: "Invers dari matriks diagonal diperoleh dengan mengganti setiap elemen pada diagonal utama dengan kebalikannya (resiprokal): 1/4, -1/2, dan 1/5, sedangkan seluruh elemen di luar diagonal utama tetap 0."
+            },
+            {
+                id: 10,
+                topic: "Penyelesaian Persamaan Matriks A·X = B",
+                prompt: `Diketahui persamaan matriks <span class="font-mono font-bold">A · X = B</span> dengan <span class="font-mono font-bold">A⁻¹ =</span>
+                    <span class="matrix-bracket"><span class="matrix-grid-3">
+                        <span>2</span><span>-1</span><span>0</span>
+                        <span>-1</span><span>2</span><span>-1</span>
+                        <span>0</span><span>-1</span><span>2</span>
+                    </span></span> dan <span class="font-mono font-bold">B =</span>
+                    <span class="matrix-bracket"><span class="grid grid-cols-1 gap-1 text-center"><span>3</span><span>4</span><span>1</span></span></span>. Matriks kolom <span class="font-mono font-bold">X</span> yang memenuhi adalah...`,
+                options: [
+                    `<span class="matrix-bracket"><span class="grid grid-cols-1 gap-1 text-center"><span>2</span><span>3</span><span>0</span></span></span>`,
+                    `<span class="matrix-bracket"><span class="grid grid-cols-1 gap-1 text-center"><span>10</span><span>4</span><span>-2</span></span></span>`,
+                    `<span class="matrix-bracket"><span class="grid grid-cols-1 gap-1 text-center"><span>2</span><span>5</span><span>2</span></span></span>`,
+                    `<span class="matrix-bracket"><span class="grid grid-cols-1 gap-1 text-center"><span>3</span><span>4</span><span>-2</span></span></span>`,
+                    `<span class="matrix-bracket"><span class="grid grid-cols-1 gap-1 text-center"><span>2</span><span>4</span><span>-2</span></span></span>` // E (Benar)
+                ],
+                correctIndex: 4,
+                explanation: "Karena A · X = B, maka X = A⁻¹ · B. Baris 1: (2)(3)+(-1)(4)+(0)(1) = 2. Baris 2: (-1)(3)+(2)(4)+(-1)(1) = 4. Baris 3: (0)(3)+(-1)(4)+(2)(1) = -2."
+            }
+        ];
+
+        // State Penyimpanan Otomatis di localStorage
+        const QUIZ_STORAGE_KEY = "kuis_khusus_invers_matriks_3x3_v1";
+        let quizState = {
+            currentIndex: 0,
+            answers: {} // format: { questionIndex: selectedOptionIndex }
+        };
+
+        function loadQuizState() {
+            try {
+                const saved = localStorage.getItem(QUIZ_STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    if (parsed && typeof parsed === 'object') {
+                        quizState.currentIndex = Number.isInteger(parsed.currentIndex) && parsed.currentIndex >= 0 && parsed.currentIndex < quizQuestions.length
+                            ? parsed.currentIndex
+                            : 0;
+                        quizState.answers = parsed.answers || {};
+                    }
+                }
+            } catch (e) {
+                console.warn("Gagal membaca data penyimpanan lokal:", e);
+            }
+        }
+
+        function saveQuizState() {
+            try {
+                localStorage.setItem(QUIZ_STORAGE_KEY, JSON.stringify(quizState));
+            } catch (e) {
+                console.warn("Gagal menyimpan data ke penyimpanan lokal:", e);
+            }
+        }
+
+        function renderQuiz() {
+            const total = quizQuestions.length;
+            const idx = quizState.currentIndex;
+            const q = quizQuestions[idx];
+            const userChoice = quizState.answers[idx];
+            const isAnswered = userChoice !== undefined;
+
+            // Hitung skor dan jumlah soal terjawab
+            const answeredKeys = Object.keys(quizState.answers);
+            let correctCount = 0;
+            answeredKeys.forEach(k => {
+                if (quizQuestions[k] && quizState.answers[k] === quizQuestions[k].correctIndex) {
+                    correctCount++;
+                }
+            });
+
+            document.getElementById('quiz-answered-count').textContent = `${answeredKeys.length}/${total}`;
+            document.getElementById('quiz-score-display').textContent = `${correctCount * 10}`;
+            document.getElementById('quiz-status-badge').textContent = `Soal ${idx + 1} / ${total}`;
+
+            // Render grid tombol navigasi nomor 1-10
+            const navGrid = document.getElementById('quiz-nav-grid');
+            navGrid.innerHTML = quizQuestions.map((item, i) => {
+                const ans = quizState.answers[i];
+                let btnClass = "h-10 rounded-xl font-mono font-bold text-sm transition cursor-pointer flex items-center justify-center border ";
+
+                if (i === idx) {
+                    btnClass += "bg-indigo-600 text-white border-indigo-600 ring-2 ring-indigo-300 shadow-xs";
+                } else if (ans !== undefined) {
+                    if (ans === item.correctIndex) {
+                        btnClass += "bg-emerald-500 text-white border-emerald-600 hover:bg-emerald-600";
+                    } else {
+                        btnClass += "bg-rose-500 text-white border-rose-600 hover:bg-rose-600";
+                    }
+                } else {
+                    btnClass += "bg-white text-slate-700 border-slate-300 hover:border-indigo-400 hover:bg-indigo-50";
+                }
+
+                return `<button onclick="jumpToQuiz(${i})" class="${btnClass}" aria-label="Buka soal nomor ${i + 1}">${i + 1}</button>`;
+            }).join('');
+
+            // Tampilkan kartu ringkasan akhir jika seluruh 10 soal selesai
+            const summaryCard = document.getElementById('quiz-summary-card');
+            if (answeredKeys.length === total) {
+                summaryCard.classList.remove('hidden');
+                const finalScore = correctCount * 10;
+                document.getElementById('quiz-final-grade').textContent = `${finalScore} / 100`;
+                let msg = "";
+                if (finalScore >= 80) {
+                    msg = "Luar biasa! Penguasaanmu terhadap determinan, kofaktor, adjoin, dan invers matriks 3×3 sangat matang.";
+                } else if (finalScore >= 60) {
+                    msg = "Bagus! Pemahamanmu sudah cukup baik. Coba cek kembali pembahasan pada soal yang masih keliru.";
+                } else {
+                    msg = "Tetap semangat! Tinjau kembali pembahasan di setiap soal, lalu klik tombol Reset untuk berlatih ulang.";
+                }
+                document.getElementById('quiz-final-message').textContent = msg;
+            } else {
+                summaryCard.classList.add('hidden');
+            }
+
+            // Render opsi jawaban A - E
+            const letters = ["A", "B", "C", "D", "E"];
+            const optionsHtml = q.options.map((optText, optIdx) => {
+                let cardClass = "w-full text-left p-3.5 sm:p-4 rounded-xl border transition flex items-center justify-between gap-3 ";
+                let badgeClass = "w-8 h-8 rounded-lg font-mono font-bold text-sm flex items-center justify-center shrink-0 ";
+                let iconHtml = "";
+
+                if (!isAnswered) {
+                    cardClass += "bg-slate-50/70 border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/50 cursor-pointer";
+                    badgeClass += "bg-white border border-slate-200 text-slate-700";
+                } else {
+                    cardClass += "cursor-default ";
+                    if (optIdx === q.correctIndex) {
+                        cardClass += "bg-emerald-50 border-emerald-500 text-emerald-950 font-semibold";
+                        badgeClass += "bg-emerald-600 text-white";
+                        iconHtml = `<span class="text-emerald-600 text-lg shrink-0"><i class="fa-solid fa-circle-check"></i></span>`;
+                    } else if (optIdx === userChoice) {
+                        cardClass += "bg-rose-50 border-rose-500 text-rose-950";
+                        badgeClass += "bg-rose-600 text-white";
+                        iconHtml = `<span class="text-rose-600 text-lg shrink-0"><i class="fa-solid fa-circle-xmark"></i></span>`;
+                    } else {
+                        cardClass += "bg-slate-50/40 border-slate-200 text-slate-400 opacity-75";
+                        badgeClass += "bg-slate-100 text-slate-400";
+                    }
+                }
+
+                return `
+                    <button onclick="selectQuizOption(${optIdx})" ${isAnswered ? 'disabled' : ''} class="${cardClass}">
+                        <div class="flex items-center gap-3 overflow-x-auto">
+                            <span class="${badgeClass}">${letters[optIdx]}</span>
+                            <div class="text-xs sm:text-sm">${optText}</div>
+                        </div>
+                        ${iconHtml}
+                    </button>
+                `;
+            }).join('');
+
+            // Render umpan balik langsung setelah menjawab
+            let feedbackHtml = "";
+            if (isAnswered) {
+                const isRight = userChoice === q.correctIndex;
+                feedbackHtml = `
+                    <div class="p-4 rounded-xl border text-xs sm:text-sm fade-in ${isRight ? 'bg-emerald-50 border-emerald-200 text-emerald-950' : 'bg-rose-50 border-rose-200 text-rose-950'}">
+                        <p class="font-bold mb-1.5 flex items-center gap-1.5">
+                            ${isRight
+                                ? '<i class="fa-solid fa-circle-check text-emerald-600"></i> Jawaban Kamu Benar!'
+                                : `<i class="fa-solid fa-circle-xmark text-rose-600"></i> Jawaban Kamu Kurang Tepat (Kunci: ${letters[q.correctIndex]})`
+                            }
+                        </p>
+                        <p class="leading-relaxed text-slate-700"><strong>Pembahasan:</strong> ${q.explanation}</p>
+                    </div>
+                `;
+            }
+
+            // Render kotak soal aktif
+            document.getElementById('quiz-question-box').innerHTML = `
+                <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                    <span class="px-3 py-1 rounded-lg bg-indigo-600 text-white font-bold text-xs">
+                        Pertanyaan ${q.id} dari ${total}
+                    </span>
+                    <span class="text-xs font-medium text-slate-600 bg-slate-100 px-3 py-1 rounded-lg">
+                        Materi: ${q.topic}
+                    </span>
+                </div>
+                <div class="text-sm sm:text-base text-slate-800 leading-relaxed overflow-x-auto py-1">
+                    ${q.prompt}
+                </div>
+                <div class="space-y-2.5">
+                    ${optionsHtml}
+                </div>
+                ${feedbackHtml}
+            `;
+
+            // Update status tombol Sebelumnya / Selanjutnya
+            document.getElementById('btn-prev-quiz').disabled = idx === 0;
+            document.getElementById('btn-next-quiz').disabled = idx === total - 1;
+        }
+
+        function selectQuizOption(optIdx) {
+            const idx = quizState.currentIndex;
+            if (quizState.answers[idx] !== undefined) return; // Kunci jawaban setelah dipilih
+            quizState.answers[idx] = optIdx;
+            saveQuizState();
+            renderQuiz();
+        }
+
+        function navigateQuiz(step) {
+            const nextIdx = quizState.currentIndex + step;
+            if (nextIdx >= 0 && nextIdx < quizQuestions.length) {
+                quizState.currentIndex = nextIdx;
+                saveQuizState();
+                renderQuiz();
+            }
+        }
+
+        function jumpToQuiz(index) {
+            if (index >= 0 && index < quizQuestions.length) {
+                quizState.currentIndex = index;
+                saveQuizState();
+                renderQuiz();
+            }
+        }
+
+        function openResetModal() {
+            document.getElementById('reset-modal').classList.remove('hidden');
+        }
+
+        function closeResetModal() {
+            document.getElementById('reset-modal').classList.add('hidden');
+        }
+
+        function confirmResetQuiz() {
+            quizState = { currentIndex: 0, answers: {} };
+            saveQuizState();
+            closeResetModal();
+            renderQuiz();
+        }
+
+        // Inisialisasi saat halaman dimuat
+        window.addEventListener('DOMContentLoaded', () => {
+            loadQuizState();
+            renderQuiz();
+        });
+    </script>
+</body>
+</html>
