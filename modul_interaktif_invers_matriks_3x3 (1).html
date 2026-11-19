@@ -1,0 +1,1661 @@
+<!DOCTYPE html>
+<html lang="id" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modul Interaktif: Invers Matriks Ordo 3×3</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Font Awesome untuk Ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Kustomisasi kurung matriks matematis yang rapi */
+        .matrix-bracket {
+            display: inline-flex;
+            align-items: center;
+            position: relative;
+            padding: 0 8px;
+            margin: 0 4px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .matrix-bracket::before,
+        .matrix-bracket::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 6px;
+            border: 2px solid currentColor;
+        }
+        .matrix-bracket::before {
+            left: 0;
+            border-right: none;
+            border-radius: 4px 0 0 4px;
+        }
+        .matrix-bracket::after {
+            right: 0;
+            border-left: none;
+            border-radius: 0 4px 4px 0;
+        }
+        .det-bracket {
+            display: inline-flex;
+            align-items: center;
+            position: relative;
+            padding: 0 8px;
+            margin: 0 4px;
+            font-family: 'JetBrains Mono', monospace;
+            border-left: 2px solid currentColor;
+            border-right: 2px solid currentColor;
+        }
+        .matrix-grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(28px, auto));
+            gap: 6px 12px;
+            text-align: center;
+        }
+        .matrix-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(32px, auto));
+            gap: 6px 14px;
+            text-align: center;
+        }
+        .matrix-grid-aug {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(28px, auto)) 2px repeat(3, minmax(28px, auto));
+            gap: 6px 10px;
+            text-align: center;
+            align-items: center;
+        }
+        .fraction {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            vertical-align: middle;
+            margin: 0 3px;
+            font-size: 0.9em;
+        }
+        .fraction > span:first-child {
+            border-bottom: 1.5px solid currentColor;
+            padding: 0 3px;
+        }
+        .fraction > span:last-child {
+            padding: 0 3px;
+        }
+        /* Visualisasi garis miring Aturan Sarrus */
+        .sarrus-box {
+            position: relative;
+            display: inline-grid;
+            grid-template-columns: repeat(5, 36px);
+            grid-template-rows: repeat(3, 30px);
+            align-items: center;
+            justify-items: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            padding: 4px 6px;
+        }
+        .sarrus-box .cell {
+            position: relative;
+            z-index: 2;
+        }
+        .sarrus-box .bar-left {
+            position: absolute;
+            left: 0;
+            top: 2px;
+            bottom: 2px;
+            width: 2px;
+            background-color: #334155;
+        }
+        .sarrus-box .bar-mid {
+            position: absolute;
+            left: 114px;
+            top: 2px;
+            bottom: 2px;
+            width: 2px;
+            background-color: #334155;
+        }
+        .sarrus-box .bar-sep {
+            position: absolute;
+            left: 118px;
+            top: 2px;
+            bottom: 2px;
+            border-left: 1.5px dashed #94a3b8;
+        }
+        .sarrus-svg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+        /* Animasi halus */
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased selection:bg-indigo-100 selection:text-indigo-900">
+
+    <!-- Navbar Sticky dengan Indikator Progres -->
+    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 flex items-center justify-center text-white font-bold shadow-md">
+                        A⁻¹
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-slate-900 text-sm sm:text-base leading-tight">Invers Matriks 3×3</h1>
+                        <p class="text-xs text-slate-500 hidden sm:block">Modul Belajar Interaktif Matematika</p>
+                    </div>
+                </div>
+                
+                <!-- Navigasi Cepat -->
+                <nav class="hidden md:flex items-center gap-1 text-sm font-medium">
+                    <a href="#tujuan" class="px-3 py-2 rounded-lg text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition">1. Tujuan</a>
+                    <a href="#warmup" class="px-3 py-2 rounded-lg text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition">2. Warm-Up 2×2</a>
+                    <a href="#penerapan" class="px-3 py-2 rounded-lg text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition">3. Penerapan</a>
+                    <a href="#materi" class="px-3 py-2 rounded-lg text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition">4. Materi 3×3</a>
+                    <a href="#contoh-soal" class="px-3 py-2 rounded-lg text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 transition">5. Contoh Soal</a>
+                </nav>
+
+                <!-- Tombol Menu Mobile -->
+                <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg text-slate-600 hover:bg-slate-100 focus:outline-none">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Dropdown Mobile -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-b border-slate-200 px-4 py-3 space-y-1">
+            <a href="#tujuan" class="block px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-indigo-50">1. Tujuan Pembelajaran</a>
+            <a href="#warmup" class="block px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-indigo-50">2. Warm-Up (5 Soal 2×2)</a>
+            <a href="#penerapan" class="block px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-indigo-50">3. Penerapan Nyata</a>
+            <a href="#materi" class="block px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-indigo-50">4. Materi Lengkap 3×3</a>
+            <a href="#contoh-soal" class="block px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-indigo-50">5. Contoh Soal & Pembahasan</a>
+        </div>
+        <!-- Progress Bar Membaca -->
+        <div class="w-full bg-slate-200 h-1">
+            <div id="scroll-progress" class="bg-gradient-to-r from-indigo-600 to-violet-500 h-1 w-0 transition-all duration-150"></div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="bg-gradient-to-br from-indigo-900 via-indigo-800 to-violet-900 text-white py-12 sm:py-16 px-4">
+        <div class="max-w-5xl mx-auto text-center">
+            <span class="inline-block py-1 px-3 rounded-full bg-indigo-500/30 border border-indigo-400/30 text-indigo-200 text-xs font-semibold tracking-wider uppercase mb-4">
+                Aljabar Linear & Matriks
+            </span>
+            <h2 class="text-3xl sm:text-5xl font-extrabold tracking-tight mb-4 leading-tight">
+                Menguasai Invers Matriks <span class="text-amber-300">Ordo 3×3</span>
+            </h2>
+            <p class="text-indigo-100 text-base sm:text-lg max-w-2xl mx-auto mb-8 leading-relaxed">
+                Pelajari konsep matriks kebalikan langkah demi langkah—mulai dari pemanasan matriks 2×2, aplikasi dunia nyata, metode Adjoin & Kofaktor, hingga Reduksi Baris Elementer.
+            </p>
+            <div class="flex flex-wrap justify-center gap-3">
+                <a href="#tujuan" class="px-6 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold shadow-lg shadow-amber-500/20 transition transform hover:-translate-y-0.5 flex items-center gap-2">
+                    <i class="fa-solid fa-play"></i> Mulai Belajar Sekarang
+                </a>
+                <a href="#laboratorium" class="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/20 text-white font-semibold backdrop-blur-sm transition flex items-center gap-2">
+                    <i class="fa-solid fa-calculator"></i> Coba Simulator 3×3
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-16">
+
+        <!-- =========================================================
+             BAGIAN 1: TUJUAN PEMBELAJARAN
+        ========================================================== -->
+        <section id="tujuan" class="scroll-mt-24">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-lg">
+                        1
+                    </div>
+                    <div>
+                        <h3 class="text-xl sm:text-2xl font-bold text-slate-900">Tujuan Pembelajaran</h3>
+                        <p class="text-sm text-slate-500">Target kompetensi yang akan kamu kuasai setelah menyelesaikan modul ini</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex items-start gap-3.5 hover:border-indigo-300 transition">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
+                            <i class="fa-solid fa-check"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-slate-900 text-sm sm:text-base">Mengingat Konsep Dasar Matriks 2×2</h4>
+                            <p class="text-xs sm:text-sm text-slate-600 mt-1">Mampu menghitung determinan dan invers matriks ordo 2×2 dengan cepat sebagai fondasi sebelum melangkah ke ordo 3×3.</p>
+                        </div>
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex items-start gap-3.5 hover:border-indigo-300 transition">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
+                            <i class="fa-solid fa-check"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-slate-900 text-sm sm:text-base">Memahami Syarat Eksistensi Invers</h4>
+                            <p class="text-xs sm:text-sm text-slate-600 mt-1">Membedakan matriks <strong>singular</strong> (<span class="font-mono">det(A) = 0</span>, tidak punya invers) dan matriks <strong>non-singular</strong> (<span class="font-mono">det(A) ≠ 0</span>, memiliki invers).</p>
+                        </div>
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex items-start gap-3.5 hover:border-indigo-300 transition">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
+                            <i class="fa-solid fa-check"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-slate-900 text-sm sm:text-base">Menentukan Invers 3×3 dengan Dua Metode</h4>
+                            <p class="text-xs sm:text-sm text-slate-600 mt-1">Terampil mencari invers matriks 3×3 menggunakan <strong>Metode Adjoin (Minor-Kofaktor)</strong> serta <strong>Metode Reduksi Baris (Gauss-Jordan)</strong>.</p>
+                        </div>
+                    </div>
+
+                    <div class="p-4 rounded-xl bg-slate-50 border border-slate-200/80 flex items-start gap-3.5 hover:border-indigo-300 transition">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 mt-0.5">
+                            <i class="fa-solid fa-check"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-semibold text-slate-900 text-sm sm:text-base">Menyelesaikan Masalah Kontekstual</h4>
+                            <p class="text-xs sm:text-sm text-slate-600 mt-1">Mengaplikasikan invers matriks 3×3 untuk memecahkan Sistem Persamaan Linear Tiga Variabel (SPLTV) dan masalah nyata lainnya.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             BAGIAN 2: WARM-UP INVERS MATRIKS 2x2 (5 SOAL INTERAKTIF)
+        ========================================================== -->
+        <section id="warmup" class="scroll-mt-24">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-lg">
+                            2
+                        </div>
+                        <div>
+                            <h3 class="text-xl sm:text-2xl font-bold text-slate-900">Warm-Up: Invers Matriks 2×2</h3>
+                            <p class="text-sm text-slate-500">Pemanasan wajib sebelum masuk ke matriks 3×3 (5 Soal Interaktif)</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 bg-amber-50 border border-amber-200 px-4 py-2 rounded-xl">
+                        <i class="fa-solid fa-star text-amber-500"></i>
+                        <span class="text-sm font-bold text-amber-900">Skor Kamu: <span id="warmup-score">0</span> / 5</span>
+                    </div>
+                </div>
+
+                <!-- Kotak Pengingat Rumus 2x2 -->
+                <div class="bg-indigo-50/70 border border-indigo-200 rounded-xl p-4 sm:p-5 mb-8">
+                    <h4 class="font-bold text-indigo-900 text-sm uppercase tracking-wider mb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-lightbulb text-amber-500"></i> Ingat Kembali Rumus Invers 2×2
+                    </h4>
+                    <div class="flex flex-wrap items-center gap-4 text-sm sm:text-base text-slate-800">
+                        <div>
+                            Jika <span class="font-mono font-bold">A =</span>
+                            <span class="matrix-bracket">
+                                <span class="matrix-grid-2">
+                                    <span>a</span><span>b</span>
+                                    <span>c</span><span>d</span>
+                                </span>
+                            </span>
+                        </div>
+                        <div>
+                            maka <span class="font-mono font-bold">det(A) = |A| = ad - bc</span>
+                        </div>
+                        <div>
+                            dan <span class="font-mono font-bold">A⁻¹ =</span>
+                            <span class="fraction"><span>1</span><span>ad - bc</span></span>
+                            <span class="matrix-bracket">
+                                <span class="matrix-grid-2">
+                                    <span class="text-indigo-700 font-bold">d</span><span class="text-rose-600 font-bold">-b</span>
+                                    <span class="text-rose-600 font-bold">-c</span><span class="text-indigo-700 font-bold">a</span>
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-slate-600 mt-2">
+                        *Tips cepat: <strong>Tukar posisi</strong> diagonal utama (a dan d), lalu <strong>ubah tanda</strong> diagonal samping (b dan c menjadi -b dan -c), kemudian bagi dengan determinannya!
+                    </p>
+                </div>
+
+                <!-- Container 5 Soal Warm-Up -->
+                <div id="warmup-container" class="space-y-6">
+                    <!-- Soal akan dirender melalui JavaScript agar interaktif dan bersih -->
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             BAGIAN 3: PENERAPAN NYATA INVERS MATRIKS 3x3
+        ========================================================== -->
+        <section id="penerapan" class="scroll-mt-24">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-xl bg-teal-100 text-teal-600 flex items-center justify-center font-bold text-lg">
+                        3
+                    </div>
+                    <div>
+                        <h3 class="text-xl sm:text-2xl font-bold text-slate-900">Penerapan Nyata Invers Matriks 3×3</h3>
+                        <p class="text-sm text-slate-500">Mengapa kita perlu repot-repot menghitung invers matriks 3×3 di dunia nyata?</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <!-- Card 1: Kriptografi -->
+                    <div class="rounded-xl border border-slate-200 p-5 bg-gradient-to-b from-white to-slate-50 hover:shadow-md transition">
+                        <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center text-xl mb-4">
+                            <i class="fa-solid fa-lock"></i>
+                        </div>
+                        <h4 class="font-bold text-slate-900 text-base mb-2">1. Kriptografi & Keamanan Siber</h4>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            Dalam <em>Hill Cipher</em>, pesan rahasia diubah menjadi angka dan dikalikan dengan <strong>Matriks Kunci 3×3 (A)</strong> untuk dienkripsi. Penerima pesan menggunakan <strong>Invers Matriks (A⁻¹)</strong> untuk mendekripsi pesan kembali ke teks asli.
+                        </p>
+                    </div>
+
+                    <!-- Card 2: Grafika Komputer 3D -->
+                    <div class="rounded-xl border border-slate-200 p-5 bg-gradient-to-b from-white to-slate-50 hover:shadow-md transition">
+                        <div class="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center text-xl mb-4">
+                            <i class="fa-solid fa-cube"></i>
+                        </div>
+                        <h4 class="font-bold text-slate-900 text-base mb-2">2. Grafika Komputer & Game 3D</h4>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            Saat memutar, memperbesar, atau memindahkan objek 3D (koordinat x, y, z), komputer mengalikan titik dengan matriks transformasi 3×3. Untuk fitur <em>Undo</em> atau deteksi klik mouse pada objek 3D, mesin game menghitung <strong>A⁻¹</strong>.
+                        </p>
+                    </div>
+
+                    <!-- Card 3: Ekonomi & Nutrisi -->
+                    <div class="rounded-xl border border-slate-200 p-5 bg-gradient-to-b from-white to-slate-50 hover:shadow-md transition">
+                        <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl mb-4">
+                            <i class="fa-solid fa-chart-pie"></i>
+                        </div>
+                        <h4 class="font-bold text-slate-900 text-base mb-2">3. Ekonomi, Produksi & SPLTV</h4>
+                        <p class="text-sm text-slate-600 leading-relaxed">
+                            Menentukan takaran optimal 3 bahan baku kimia, menghitung arus listrik pada 3 loop rangkaian (Hukum Kirchhoff), hingga menganalisis keseimbangan pasar 3 komoditas (Model Input-Output Leontief) melalui persamaan <strong>X = A⁻¹B</strong>.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Simulasi Mini: Kriptografi Hill Cipher -->
+                <div class="bg-slate-900 text-white rounded-2xl p-6 border border-slate-800">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+                        <h4 class="font-bold text-amber-400 flex items-center gap-2">
+                            <i class="fa-solid fa-user-secret"></i> Mini-Demo: Mengirim Pesan Rahasia dengan Matriks 3×3
+                        </h4>
+                        <span class="text-xs bg-slate-800 text-slate-300 px-3 py-1 rounded-full">Simulasi Interaktif</span>
+                    </div>
+                    <p class="text-sm text-slate-300 mb-4">
+                        Misalkan kata sandi brankas adalah angka <code class="text-amber-300 font-bold">[2, 5, 1]</code>. Pengirim mengalikannya dengan matriks kunci <code class="text-indigo-300">A</code> sehingga berubah menjadi kode acak <code class="text-rose-400 font-bold">[12, 13, 19]</code>. Klik tombol di bawah untuk melihat bagaimana <strong>A⁻¹</strong> membongkar sandi tersebut!
+                    </p>
+                    <div class="flex flex-wrap items-center gap-4 bg-slate-800/80 p-4 rounded-xl font-mono text-xs sm:text-sm">
+                        <div>
+                            <span class="text-slate-400 block mb-1">Pesan Terenkripsi (C):</span>
+                            <span class="matrix-bracket text-rose-400">
+                                <span class="grid grid-cols-1 gap-1 text-center"><span>12</span><span>13</span><span>19</span></span>
+                            </span>
+                        </div>
+                        <div class="text-lg text-slate-400">×</div>
+                        <div>
+                            <span class="text-slate-400 block mb-1">Kunci Invers (A⁻¹):</span>
+                            <span class="matrix-bracket text-emerald-400">
+                                <span class="matrix-grid-3">
+                                    <span>1</span><span>-1</span><span>0</span>
+                                    <span>-2</span><span>3</span><span>-1</span>
+                                    <span>1</span><span>-2</span><span>1</span>
+                                </span>
+                            </span>
+                        </div>
+                        <div>
+                            <button id="btn-decrypt-demo" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-lg transition cursor-pointer">
+                                <i class="fa-solid fa-unlock mr-1"></i> Dekripsi (A⁻¹ × C)
+                            </button>
+                        </div>
+                        <div id="decrypt-result" class="hidden fade-in bg-emerald-950/80 border border-emerald-500/40 px-4 py-2 rounded-lg text-emerald-300">
+                            Hasil Dekripsi: <strong>[2, 5, 1]</strong> (Sandi Terbuka!)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             BAGIAN 4: MATERI LENGKAP INVERS MATRIKS 3x3
+        ========================================================== -->
+        <section id="materi" class="scroll-mt-24">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-lg">
+                        4
+                    </div>
+                    <div>
+                        <h3 class="text-xl sm:text-2xl font-bold text-slate-900">Materi Lengkap: Invers Matriks 3×3</h3>
+                        <p class="text-sm text-slate-500">Pelajari definisi, syarat, serta dua metode utama menentukan invers matriks ordo 3×3</p>
+                    </div>
+                </div>
+
+                <!-- 4.1 Definisi & Syarat -->
+                <div class="mb-8 space-y-4">
+                    <h4 class="text-lg font-bold text-slate-900 border-l-4 border-indigo-600 pl-3">
+                        A. Definisi & Syarat Matriks Memiliki Invers
+                    </h4>
+                    <p class="text-sm sm:text-base text-slate-700 leading-relaxed">
+                        Jika <span class="font-mono font-bold">A</span> adalah matriks persegi berordo 3×3, maka invers dari matriks <span class="font-mono font-bold">A</span> (dilambangkan <span class="font-mono font-bold">A⁻¹</span>) adalah matriks berordo 3×3 yang memenuhi sifat:
+                    </p>
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 text-center font-mono text-sm sm:text-base overflow-x-auto">
+                        <strong>A × A⁻¹ = A⁻¹ × A = I</strong>
+                        <span class="mx-2 text-slate-400">di mana</span>
+                        <strong>I =</strong>
+                        <span class="matrix-bracket">
+                            <span class="matrix-grid-3">
+                                <span>1</span><span>0</span><span>0</span>
+                                <span>0</span><span>1</span><span>0</span>
+                                <span>0</span><span>0</span><span>1</span>
+                            </span>
+                        </span>
+                        <span class="text-xs text-slate-500 block mt-1">(Matriks Identitas Ordo 3×3)</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                        <div class="p-4 rounded-xl bg-rose-50 border border-rose-200">
+                            <span class="text-xs font-bold uppercase text-rose-700 tracking-wider">Matriks Singular</span>
+                            <p class="font-mono font-bold text-rose-900 text-lg my-1">det(A) = |A| = 0</p>
+                            <p class="text-xs sm:text-sm text-rose-800">Matriks <strong>TIDAK MEMILIKI invers</strong> karena pembagian dengan nol (<span class="fraction font-mono font-bold"><span>1</span><span>0</span></span>) tidak terdefinisi.</p>
+                        </div>
+                        <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
+                            <span class="text-xs font-bold uppercase text-emerald-700 tracking-wider">Matriks Non-Singular</span>
+                            <p class="font-mono font-bold text-emerald-900 text-lg my-1">det(A) = |A| ≠ 0</p>
+                            <p class="text-xs sm:text-sm text-emerald-800">Matriks <strong>MEMILIKI invers</strong> yang tunggal (unik).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab Switcher untuk 2 Metode Utama -->
+                <div class="mb-6">
+                    <h4 class="text-lg font-bold text-slate-900 border-l-4 border-indigo-600 pl-3 mb-4">
+                        B. Dua Metode Mencari Invers Matriks 3×3
+                    </h4>
+                    <div class="flex flex-wrap gap-2 border-b border-slate-200 pb-3">
+                        <button onclick="switchMethodTab('adjoin')" id="tab-adjoin" class="px-4 py-2.5 rounded-xl text-sm font-bold bg-indigo-600 text-white shadow-sm transition cursor-pointer">
+                            <i class="fa-solid fa-table-cells mr-1.5"></i> Metode 1: Minor, Kofaktor & Adjoin
+                        </button>
+                        <button onclick="switchMethodTab('obe')" id="tab-obe" class="px-4 py-2.5 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition cursor-pointer">
+                            <i class="fa-solid fa-bars-staggered mr-1.5"></i> Metode 2: Reduksi Baris (Gauss-Jordan)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- KONTEN METODE 1: MINOR, KOFAKTOR, ADJOIN -->
+                <div id="content-adjoin" class="space-y-6 fade-in">
+                    <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-5">
+                        <p class="text-sm text-indigo-950 font-medium mb-2">Rumus Utama Metode Adjoin:</p>
+                        <div class="text-lg sm:text-xl font-mono font-bold text-indigo-900">
+                            A⁻¹ = <span class="fraction"><span>1</span><span>det(A)</span></span> · adj(A)
+                        </div>
+                        <p class="text-xs text-indigo-700 mt-2">
+                            Untuk menemukan <strong>A⁻¹</strong>, kita melewati <strong>5 Langkah Sistematis</strong> berikut:
+                        </p>
+                    </div>
+
+                    <!-- Langkah 1: Determinan -->
+                    <div class="border border-slate-200 rounded-xl p-5 space-y-3">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-1 rounded-md bg-indigo-600 text-white text-xs font-bold">Langkah 1</span>
+                            <h5 class="font-bold text-slate-900">Menghitung Determinan Matriks 3×3 (Metode Sarrus)</h5>
+                        </div>
+                        <p class="text-sm text-slate-600">
+                            Salin <strong>kolom ke-1</strong> dan <strong>kolom ke-2</strong> ke sebelah kanan matriks. Kalikan diagonal yang turun ke kanan (bertanda <strong>+</strong>), lalu kurangi dengan hasil kali diagonal yang naik ke kanan (bertanda <strong>−</strong>).
+                        </p>
+                        <div class="bg-slate-50 p-4 rounded-xl overflow-x-auto font-mono text-xs sm:text-sm">
+                            <div class="flex items-center gap-2 min-w-max">
+                                <span>det(A) =</span>
+                                <span class="det-bracket">
+                                    <span class="matrix-grid-3">
+                                        <span>a₁₁</span><span>a₁₂</span><span>a₁₃</span>
+                                        <span>a₂₁</span><span>a₂₂</span><span>a₂₃</span>
+                                        <span>a₃₁</span><span>a₃₂</span><span>a₃₃</span>
+                                    </span>
+                                </span>
+                                <span class="grid grid-cols-2 gap-x-3 gap-y-1.5 text-slate-500 border-l border-dashed border-slate-400 pl-2">
+                                    <span>a₁₁</span><span>a₁₂</span>
+                                    <span>a₂₁</span><span>a₂₂</span>
+                                    <span>a₃₁</span><span>a₃₂</span>
+                                </span>
+                            </div>
+                            <p class="mt-3 text-slate-800">
+                                <span class="text-emerald-700 font-bold">det(A) = (a₁₁·a₂₂·a₃₃ + a₁₂·a₂₃·a₃₁ + a₁₃·a₂₁·a₃₂)</span> − <span class="text-rose-700 font-bold">(a₃₁·a₂₂·a₁₃ + a₃₂·a₂₃·a₁₁ + a₃₃·a₂₁·a₁₂)</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Langkah 2: Minor -->
+                    <div class="border border-slate-200 rounded-xl p-5 space-y-3">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-1 rounded-md bg-indigo-600 text-white text-xs font-bold">Langkah 2</span>
+                            <h5 class="font-bold text-slate-900">Menentukan 9 Elemen Minor (Mᵢⱼ)</h5>
+                        </div>
+                        <p class="text-sm text-slate-600">
+                            <strong>Minor Mᵢⱼ</strong> adalah determinan matriks 2×2 yang tersisa setelah kita <strong>menutup/menghapus baris ke-i dan kolom ke-j</strong>. Karena ada 9 posisi, kita hitung dari M₁₁ sampai M₃₃.
+                        </p>
+                        <!-- Visualisasi Interaktif Tutup Baris & Kolom -->
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <p class="text-xs font-semibold text-slate-600 mb-3">
+                                <i class="fa-solid fa-hand-pointer text-indigo-600 mr-1"></i> Klik posisi elemen di bawah ini untuk melihat visualisasi cara mendapatkan Minor <strong>Mᵢⱼ</strong>:
+                            </p>
+                            <div class="flex flex-col sm:flex-row items-center gap-6">
+                                <div class="grid grid-cols-3 gap-2 font-mono text-sm" id="minor-visualizer-grid">
+                                    <button onclick="showMinorDemo(1,1)" class="minor-btn px-3 py-2 rounded-lg bg-indigo-600 text-white font-bold">a₁₁</button>
+                                    <button onclick="showMinorDemo(1,2)" class="minor-btn px-3 py-2 rounded-lg bg-white border border-slate-300 hover:bg-indigo-50">a₁₂</button>
+                                    <button onclick="showMinorDemo(1,3)" class="minor-btn px-3 py-2 rounded-lg bg-white border border-slate-300 hover:bg-indigo-50">a₁₃</button>
+                                    <button onclick="showMinorDemo(2,1)" class="minor-btn px-3 py-2 rounded-lg bg-white border border-slate-300 hover:bg-indigo-50">a₂₁</button>
+                                    <button onclick="showMinorDemo(2,2)" class="minor-btn px-3 py-2 rounded-lg bg-white border border-slate-300 hover:bg-indigo-50">a₂₂</button>
+                                    <button onclick="showMinorDemo(2,3)" class="minor-btn px-3 py-2 rounded-lg bg-white border border-slate-300 hover:bg-indigo-50">a₂₃</button>
+                                    <button onclick="showMinorDemo(3,1)" class="minor-btn px-3 py-2 rounded-lg bg-white border border-slate-300 hover:bg-indigo-50">a₃₁</button>
+                                    <button onclick="showMinorDemo(3,2)" class="minor-btn px-3 py-2 rounded-lg bg-white border border-slate-300 hover:bg-indigo-50">a₃₂</button>
+                                    <button onclick="showMinorDemo(3,3)" class="minor-btn px-3 py-2 rounded-lg bg-white border border-slate-300 hover:bg-indigo-50">a₃₃</button>
+                                </div>
+                                <div id="minor-visualizer-output" class="text-sm font-mono bg-white p-4 rounded-xl border border-slate-200 flex-1 w-full">
+                                    <!-- Diisi JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Langkah 3: Kofaktor -->
+                    <div class="border border-slate-200 rounded-xl p-5 space-y-3">
+                        <div class="flex items-center gap-2">
+                            <span class="px-2.5 py-1 rounded-md bg-indigo-600 text-white text-xs font-bold">Langkah 3</span>
+                            <h5 class="font-bold text-slate-900">Menentukan Matriks Kofaktor (C)</h5>
+                        </div>
+                        <p class="text-sm text-slate-600">
+                            Kofaktor diperoleh dengan mengalikan Minor dengan tanda selang-seling <code class="font-mono bg-slate-100 px-1.5 py-0.5 rounded">Cᵢⱼ = (-1)ⁱ⁺ʲ · Mᵢⱼ</code>. Pola tandanya berbentuk seperti papan catur:
+                        </p>
+                        <div class="flex flex-wrap items-center gap-6 bg-slate-50 p-4 rounded-xl font-mono text-sm">
+                            <div>
+                                <span class="text-xs text-slate-500 block mb-1">Pola Tanda Kofaktor:</span>
+                                <span class="matrix-bracket">
+                                    <span class="matrix-grid-3 font-bold">
+                                        <span class="text-emerald-600">+</span><span class="text-rose-600">−</span><span class="text-emerald-600">+</span>
+                                        <span class="text-rose-600">−</span><span class="text-emerald-600">+</span><span class="text-rose-600">−</span>
+                                        <span class="text-emerald-600">+</span><span class="text-rose-600">−</span><span class="text-emerald-600">+</span>
+                                    </span>
+                                </span>
+                            </div>
+                            <div>
+                                <span class="text-xs text-slate-500 block mb-1">Matriks Kofaktor (C):</span>
+                                <span class="matrix-bracket">
+                                    <span class="matrix-grid-3">
+                                        <span>+M₁₁</span><span>−M₁₂</span><span>+M₁₃</span>
+                                        <span>−M₂₁</span><span>+M₂₂</span><span>−M₂₃</span>
+                                        <span>+M₃₁</span><span>−M₃₂</span><span>+M₃₃</span>
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Langkah 4 & 5: Adjoin & Invers -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="border border-slate-200 rounded-xl p-5 space-y-2">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2.5 py-1 rounded-md bg-indigo-600 text-white text-xs font-bold">Langkah 4</span>
+                                <h5 class="font-bold text-slate-900">Menentukan Adjoin: adj(A) = Cᵀ</h5>
+                            </div>
+                            <p class="text-sm text-slate-600">
+                                <strong>Transpose</strong> matriks kofaktor <strong>C</strong> (ubah baris menjadi kolom, dan kolom menjadi baris).
+                            </p>
+                            <div class="bg-slate-50 p-3 rounded-lg font-mono text-xs sm:text-sm text-center">
+                                adj(A) = Cᵀ =
+                                <span class="matrix-bracket">
+                                    <span class="matrix-grid-3">
+                                        <span>C₁₁</span><span>C₂₁</span><span>C₃₁</span>
+                                        <span>C₁₂</span><span>C₂₂</span><span>C₃₂</span>
+                                        <span>C₁₃</span><span>C₂₃</span><span>C₃₃</span>
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="border border-slate-200 rounded-xl p-5 space-y-2">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2.5 py-1 rounded-md bg-emerald-600 text-white text-xs font-bold">Langkah 5</span>
+                                <h5 class="font-bold text-slate-900">Hitung Hasil Akhir Invers (A⁻¹)</h5>
+                            </div>
+                            <p class="text-sm text-slate-600">
+                                Kalikan setiap elemen di dalam matriks <strong>adj(A)</strong> dengan skalar <strong>1 / det(A)</strong>.
+                            </p>
+                            <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-lg font-mono text-sm text-center text-emerald-900 font-bold">
+                                A⁻¹ = (1 / det(A)) × adj(A)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KONTEN METODE 2: REDUKSI BARIS (GAUSS-JORDAN) -->
+                <div id="content-obe" class="hidden space-y-6 fade-in">
+                    <div class="bg-violet-50 border border-violet-200 rounded-xl p-5">
+                        <h5 class="font-bold text-violet-950 text-base mb-1">Konsep Operasi Baris Elementer (OBE / Gauss-Jordan)</h5>
+                        <p class="text-sm text-violet-900 leading-relaxed">
+                            Kita menggabungkan matriks <strong>A</strong> di sebelah kiri dan matriks identitas <strong>I</strong> di sebelah kanan menjadi matriks diperbesar <code class="font-mono bg-white px-2 py-0.5 rounded border border-violet-200">[ A | I ]</code>. Kemudian lakukan manipulasi baris hingga sisi kiri berubah menjadi matriks identitas <code class="font-mono bg-white px-2 py-0.5 rounded border border-violet-200">[ I | A⁻¹ ]</code>.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-5 font-mono text-xs sm:text-sm overflow-x-auto">
+                        <div class="flex flex-wrap items-center justify-center gap-4 min-w-max">
+                            <span class="matrix-bracket">
+                                <span class="matrix-grid-aug">
+                                    <span>a</span><span>b</span><span>c</span><span class="bg-slate-400 h-full w-0.5"></span><span>1</span><span>0</span><span>0</span>
+                                    <span>d</span><span>e</span><span>f</span><span class="bg-slate-400 h-full w-0.5"></span><span>0</span><span>1</span><span>0</span>
+                                    <span>g</span><span>h</span><span>i</span><span class="bg-slate-400 h-full w-0.5"></span><span>0</span><span>0</span><span>1</span>
+                                </span>
+                            </span>
+                            <div class="text-center">
+                                <span class="text-xs text-indigo-600 font-sans font-bold block">Operasi Baris (OBE)</span>
+                                <span class="text-xl text-indigo-600">⟶</span>
+                            </div>
+                            <span class="matrix-bracket">
+                                <span class="matrix-grid-aug">
+                                    <span class="text-emerald-600 font-bold">1</span><span>0</span><span>0</span><span class="bg-slate-400 h-full w-0.5"></span><span class="text-indigo-700 font-bold">p</span><span class="text-indigo-700 font-bold">q</span><span class="text-indigo-700 font-bold">r</span>
+                                    <span>0</span><span class="text-emerald-600 font-bold">1</span><span>0</span><span class="bg-slate-400 h-full w-0.5"></span><span class="text-indigo-700 font-bold">s</span><span class="text-indigo-700 font-bold">t</span><span class="text-indigo-700 font-bold">u</span>
+                                    <span>0</span><span>0</span><span class="text-emerald-600 font-bold">1</span><span class="bg-slate-400 h-full w-0.5"></span><span class="text-indigo-700 font-bold">v</span><span class="text-indigo-700 font-bold">w</span><span class="text-indigo-700 font-bold">x</span>
+                                </span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="border border-slate-200 rounded-xl p-5">
+                        <h5 class="font-bold text-slate-900 mb-3">3 Aturan Sah dalam Operasi Baris Elementer (OBE):</h5>
+                        <ul class="space-y-2.5 text-sm text-slate-700">
+                            <li class="flex items-start gap-2.5">
+                                <span class="w-6 h-6 rounded-full bg-violet-100 text-violet-700 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">1</span>
+                                <span><strong>Menukar posisi dua baris:</strong> Misalnya menukar Baris 1 dan Baris 2 (ditulis <code class="font-mono text-violet-700">B₁ ↔ B₂</code>).</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <span class="w-6 h-6 rounded-full bg-violet-100 text-violet-700 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">2</span>
+                                <span><strong>Mengalikan/membagi satu baris dengan bilangan tak nol:</strong> Misalnya membagi semua elemen Baris 2 dengan 5 (ditulis <code class="font-mono text-violet-700">B₂ ÷ 5</code>).</span>
+                            </li>
+                            <li class="flex items-start gap-2.5">
+                                <span class="w-6 h-6 rounded-full bg-violet-100 text-violet-700 font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">3</span>
+                                <span><strong>Menjumlahkan/mengurangkan suatu baris dengan kelipatan baris lain:</strong> Misalnya Baris 2 dikurangi 2 kali Baris 1 (ditulis <code class="font-mono text-violet-700">B₂ − 2B₁</code>).</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             LABORATORIUM SIMULATOR INTERAKTIF 3x3
+        ========================================================== -->
+        <section id="laboratorium" class="scroll-mt-24">
+            <div class="bg-gradient-to-br from-slate-900 to-indigo-950 text-white rounded-2xl shadow-lg p-6 sm:p-8 border border-indigo-800/50">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                    <div>
+                        <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Alat Bantu Eksplorasi</span>
+                        <h3 class="text-xl sm:text-2xl font-bold mt-1">Simulator Invers Matriks 3×3 Otomatis</h3>
+                        <p class="text-sm text-indigo-200 mt-1">Masukkan angka apa saja pada matriks di bawah untuk melihat Determinan, Minor, Kofaktor, Adjoin, dan Inversnya secara instan!</p>
+                    </div>
+                    <button onclick="setPresetMatrix()" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-semibold border border-white/20 transition self-start cursor-pointer">
+                        <i class="fa-solid fa-dice mr-1"></i> Acak Angka Baru
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    <!-- Input Matriks 3x3 -->
+                    <div class="lg:col-span-5 bg-white/5 border border-white/10 rounded-xl p-5">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-indigo-300 mb-3 text-center">Input Elemen Matriks A (3×3)</label>
+                        <div class="grid grid-cols-3 gap-2.5 max-w-[240px] mx-auto">
+                            <input type="number" id="m00" value="3" class="sim-input w-full bg-slate-800 border border-slate-600 rounded-lg py-2.5 text-center font-mono font-bold text-white focus:border-amber-400 focus:outline-none">
+                            <input type="number" id="m01" value="-5" class="sim-input w-full bg-slate-800 border border-slate-600 rounded-lg py-2.5 text-center font-mono font-bold text-white focus:border-amber-400 focus:outline-none">
+                            <input type="number" id="m02" value="0" class="sim-input w-full bg-slate-800 border border-slate-600 rounded-lg py-2.5 text-center font-mono font-bold text-white focus:border-amber-400 focus:outline-none">
+                            
+                            <input type="number" id="m10" value="2" class="sim-input w-full bg-slate-800 border border-slate-600 rounded-lg py-2.5 text-center font-mono font-bold text-white focus:border-amber-400 focus:outline-none">
+                            <input type="number" id="m11" value="-3" class="sim-input w-full bg-slate-800 border border-slate-600 rounded-lg py-2.5 text-center font-mono font-bold text-white focus:border-amber-400 focus:outline-none">
+                            <input type="number" id="m12" value="1" class="sim-input w-full bg-slate-800 border border-slate-600 rounded-lg py-2.5 text-center font-mono font-bold text-white focus:border-amber-400 focus:outline-none">
+                            
+                            <input type="number" id="m20" value="-1" class="sim-input w-full bg-slate-800 border border-slate-600 rounded-lg py-2.5 text-center font-mono font-bold text-white focus:border-amber-400 focus:outline-none">
+                            <input type="number" id="m21" value="2" class="sim-input w-full bg-slate-800 border border-slate-600 rounded-lg py-2.5 text-center font-mono font-bold text-white focus:border-amber-400 focus:outline-none">
+                            <input type="number" id="m22" value="2" class="sim-input w-full bg-slate-800 border border-slate-600 rounded-lg py-2.5 text-center font-mono font-bold text-white focus:border-amber-400 focus:outline-none">
+                        </div>
+                        <button onclick="calculateSimulator()" class="w-full mt-5 py-3 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-900 font-bold text-sm transition shadow-lg cursor-pointer">
+                            <i class="fa-solid fa-bolt mr-1"></i> Hitung Langkah-Demi-Langkah
+                        </button>
+                    </div>
+
+                    <!-- Output Perhitungan Otomatis -->
+                    <div id="sim-output" class="lg:col-span-7 bg-slate-900/90 border border-slate-700 rounded-xl p-5 font-mono text-xs sm:text-sm space-y-4">
+                        <!-- Diisi secara dinamis oleh JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- =========================================================
+             BAGIAN 5: CONTOH SOAL & PEMBAHASAN RINCI
+        ========================================================== -->
+        <section id="contoh-soal" class="scroll-mt-24">
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-lg">
+                        5
+                    </div>
+                    <div>
+                        <h3 class="text-xl sm:text-2xl font-bold text-slate-900">Contoh Soal & Pembahasan Rinci</h3>
+                        <p class="text-sm text-slate-500">Pelajari 3 variasi soal mulai dari metode Kofaktor-Adjoin, Reduksi Baris, hingga Aplikasi SPLTV</p>
+                    </div>
+                </div>
+
+                <div class="space-y-8">
+                    <!-- CONTOH SOAL 1 -->
+                    <div class="border border-slate-200 rounded-2xl overflow-hidden">
+                        <div class="bg-slate-50 px-5 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                            <span class="font-bold text-indigo-700 text-sm">CONTOH SOAL 1 (Metode Minor, Kofaktor & Adjoin)</span>
+                            <span class="text-xs bg-indigo-100 text-indigo-700 px-2.5 py-1 rounded-full font-semibold">Tingkat: Standar</span>
+                        </div>
+                        <div class="p-5 sm:p-6 space-y-4">
+                            <div class="text-sm sm:text-base text-slate-800">
+                                Tentukan invers dari matriks
+                                <span class="font-mono font-bold">A =</span>
+                                <span class="matrix-bracket">
+                                    <span class="matrix-grid-3">
+                                        <span>0</span><span>3</span><span>2</span>
+                                        <span>1</span><span>1</span><span>0</span>
+                                        <span>4</span><span>-2</span><span>-1</span>
+                                    </span>
+                                </span>
+                                menggunakan metode kofaktor dan adjoin!
+                            </div>
+
+                            <button onclick="toggleSolution('sol-1', this)" class="px-4 py-2 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold text-xs sm:text-sm transition cursor-pointer">
+                                <i class="fa-solid fa-eye mr-1.5"></i> Sembunyikan Pembahasan
+                            </button>
+
+                            <div id="sol-1" class="space-y-4 pt-2 border-t border-slate-100 text-xs sm:text-sm">
+                                <!-- Step 1 -->
+                                <div class="bg-slate-50 p-4 rounded-xl space-y-3">
+                                    <p class="font-bold text-slate-900">Langkah 1: Hitung Determinan |A| dengan Aturan Sarrus (Garis Miring)</p>
+                                    <p class="text-xs text-slate-600">Salin kolom ke-1 dan kolom ke-2 ke sebelah kanan, lalu tarik garis diagonal turun (<span class="text-emerald-600 font-bold">hijau / +</span>) dan diagonal naik (<span class="text-rose-600 font-bold">merah / −</span>):</p>
+                                    
+                                    <div class="overflow-x-auto py-2">
+                                        <div class="flex flex-wrap items-center gap-4 min-w-max">
+                                            <span class="font-mono font-bold text-slate-800">|A| =</span>
+                                            <!-- Diagram Garis Miring Sarrus -->
+                                            <div class="sarrus-box bg-white rounded-lg border border-slate-200 shadow-xs">
+                                                <span class="bar-left"></span>
+                                                <span class="bar-mid"></span>
+                                                <span class="bar-sep"></span>
+                                                <!-- SVG Garis Miring Diagonal -->
+                                                <svg class="sarrus-svg" viewBox="0 0 192 98">
+                                                    <!-- 3 Garis Diagonal Utama (Turun ke Kanan - Hijau) -->
+                                                    <line x1="24" y1="19" x2="96" y2="79" stroke="#10b981" stroke-width="2.2" stroke-linecap="round" opacity="0.65" />
+                                                    <line x1="60" y1="19" x2="132" y2="79" stroke="#10b981" stroke-width="2.2" stroke-linecap="round" opacity="0.65" />
+                                                    <line x1="96" y1="19" x2="168" y2="79" stroke="#10b981" stroke-width="2.2" stroke-linecap="round" opacity="0.65" />
+                                                    <!-- 3 Garis Diagonal Samping (Naik ke Kanan - Merah Putus-putus) -->
+                                                    <line x1="24" y1="79" x2="96" y2="19" stroke="#f43f5e" stroke-width="2.2" stroke-dasharray="4 3" stroke-linecap="round" opacity="0.65" />
+                                                    <line x1="60" y1="79" x2="132" y2="19" stroke="#f43f5e" stroke-width="2.2" stroke-dasharray="4 3" stroke-linecap="round" opacity="0.65" />
+                                                    <line x1="96" y1="79" x2="168" y2="19" stroke="#f43f5e" stroke-width="2.2" stroke-dasharray="4 3" stroke-linecap="round" opacity="0.65" />
+                                                </svg>
+                                                <!-- Baris 1 -->
+                                                <span class="cell">0</span><span class="cell">3</span><span class="cell">2</span><span class="cell text-slate-500">0</span><span class="cell text-slate-500">3</span>
+                                                <!-- Baris 2 -->
+                                                <span class="cell">1</span><span class="cell">1</span><span class="cell">0</span><span class="cell text-slate-500">1</span><span class="cell text-slate-500">1</span>
+                                                <!-- Baris 3 -->
+                                                <span class="cell">4</span><span class="cell">-2</span><span class="cell">-1</span><span class="cell text-slate-500">4</span><span class="cell text-slate-500">-2</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <p class="font-mono text-slate-700 leading-relaxed">
+                                        |A| = <span class="text-emerald-700 font-semibold">[ (0·1·(-1)) + (3·0·4) + (2·1·(-2)) ]</span> − <span class="text-rose-700 font-semibold">[ (4·1·2) + ((-2)·0·0) + ((-1)·1·3) ]</span><br>
+                                        |A| = <span class="text-emerald-700">[ 0 + 0 − 4 ]</span> − <span class="text-rose-700">[ 8 + 0 − 3 ]</span><br>
+                                        |A| = −4 − 5 = <strong class="text-indigo-700 text-base">−9</strong> (Karena −9 ≠ 0, matriks A memiliki invers)
+                                    </p>
+                                </div>
+
+                                <!-- Step 2 -->
+                                <div class="bg-slate-50 p-4 rounded-xl">
+                                    <p class="font-bold text-slate-900 mb-2">Langkah 2: Hitung Kesembilan Minor (Mᵢⱼ = det submatriks 2×2)</p>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 font-mono text-xs">
+                                        <!-- M11 -->
+                                        <div class="bg-white p-3 rounded-lg border border-slate-200 flex items-center gap-2 overflow-x-auto">
+                                            <span>M₁₁ =</span>
+                                            <span class="det-bracket">
+                                                <span class="matrix-grid-2"><span>1</span><span>0</span><span>-2</span><span>-1</span></span>
+                                            </span>
+                                            <span>= (1)(-1) − (0)(-2) = <strong>-1</strong></span>
+                                        </div>
+                                        <!-- M12 -->
+                                        <div class="bg-white p-3 rounded-lg border border-slate-200 flex items-center gap-2 overflow-x-auto">
+                                            <span>M₁₂ =</span>
+                                            <span class="det-bracket">
+                                                <span class="matrix-grid-2"><span>1</span><span>0</span><span>4</span><span>-1</span></span>
+                                            </span>
+                                            <span>= (1)(-1) − (0)(4) = <strong>-1</strong></span>
+                                        </div>
+                                        <!-- M13 -->
+                                        <div class="bg-white p-3 rounded-lg border border-slate-200 flex items-center gap-2 overflow-x-auto">
+                                            <span>M₁₃ =</span>
+                                            <span class="det-bracket">
+                                                <span class="matrix-grid-2"><span>1</span><span>1</span><span>4</span><span>-2</span></span>
+                                            </span>
+                                            <span>= (1)(-2) − (1)(4) = <strong>-6</strong></span>
+                                        </div>
+                                        <!-- M21 -->
+                                        <div class="bg-white p-3 rounded-lg border border-slate-200 flex items-center gap-2 overflow-x-auto">
+                                            <span>M₂₁ =</span>
+                                            <span class="det-bracket">
+                                                <span class="matrix-grid-2"><span>3</span><span>2</span><span>-2</span><span>-1</span></span>
+                                            </span>
+                                            <span>= (3)(-1) − (2)(-2) = <strong>1</strong></span>
+                                        </div>
+                                        <!-- M22 -->
+                                        <div class="bg-white p-3 rounded-lg border border-slate-200 flex items-center gap-2 overflow-x-auto">
+                                            <span>M₂₂ =</span>
+                                            <span class="det-bracket">
+                                                <span class="matrix-grid-2"><span>0</span><span>2</span><span>4</span><span>-1</span></span>
+                                            </span>
+                                            <span>= (0)(-1) − (2)(4) = <strong>-8</strong></span>
+                                        </div>
+                                        <!-- M23 -->
+                                        <div class="bg-white p-3 rounded-lg border border-slate-200 flex items-center gap-2 overflow-x-auto">
+                                            <span>M₂₃ =</span>
+                                            <span class="det-bracket">
+                                                <span class="matrix-grid-2"><span>0</span><span>3</span><span>4</span><span>-2</span></span>
+                                            </span>
+                                            <span>= (0)(-2) − (3)(4) = <strong>-12</strong></span>
+                                        </div>
+                                        <!-- M31 -->
+                                        <div class="bg-white p-3 rounded-lg border border-slate-200 flex items-center gap-2 overflow-x-auto">
+                                            <span>M₃₁ =</span>
+                                            <span class="det-bracket">
+                                                <span class="matrix-grid-2"><span>3</span><span>2</span><span>1</span><span>0</span></span>
+                                            </span>
+                                            <span>= (3)(0) − (2)(1) = <strong>-2</strong></span>
+                                        </div>
+                                        <!-- M32 -->
+                                        <div class="bg-white p-3 rounded-lg border border-slate-200 flex items-center gap-2 overflow-x-auto">
+                                            <span>M₃₂ =</span>
+                                            <span class="det-bracket">
+                                                <span class="matrix-grid-2"><span>0</span><span>2</span><span>1</span><span>0</span></span>
+                                            </span>
+                                            <span>= (0)(0) − (2)(1) = <strong>-2</strong></span>
+                                        </div>
+                                        <!-- M33 -->
+                                        <div class="bg-white p-3 rounded-lg border border-slate-200 flex items-center gap-2 overflow-x-auto">
+                                            <span>M₃₃ =</span>
+                                            <span class="det-bracket">
+                                                <span class="matrix-grid-2"><span>0</span><span>3</span><span>1</span><span>1</span></span>
+                                            </span>
+                                            <span>= (0)(1) − (3)(1) = <strong>-3</strong></span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Step 3 & 4 -->
+                                <div class="bg-slate-50 p-4 rounded-xl grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div>
+                                        <p class="font-bold text-slate-900 mb-2">Langkah 3: Matriks Kofaktor (C)</p>
+                                        <p class="text-xs text-slate-600 mb-2">Kalikan minor dengan pola tanda (+, −, + / −, +, − / +, −, +):</p>
+                                        <div class="font-mono">
+                                            C =
+                                            <span class="matrix-bracket">
+                                                <span class="matrix-grid-3">
+                                                    <span>-1</span><span>1</span><span>-6</span>
+                                                    <span>-1</span><span>-8</span><span>12</span>
+                                                    <span>-2</span><span>2</span><span>-3</span>
+                                                </span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <p class="font-bold text-slate-900 mb-2">Langkah 4: Adjoin Matriks (adj(A) = Cᵀ)</p>
+                                        <p class="text-xs text-slate-600 mb-2">Ubah baris kofaktor menjadi kolom:</p>
+                                        <div class="font-mono">
+                                            adj(A) =
+                                            <span class="matrix-bracket">
+                                                <span class="matrix-grid-3">
+                                                    <span>-1</span><span>-1</span><span>-2</span>
+                                                    <span>1</span><span>-8</span><span>2</span>
+                                                    <span>-6</span><span>12</span><span>-3</span>
+                                                </span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Step 5 -->
+                                <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl font-mono">
+                                    <p class="font-sans font-bold text-emerald-900 mb-2">Langkah 5: Hitung Invers A⁻¹ = (1 / |A|) · adj(A)</p>
+                                    <div class="flex flex-wrap items-center gap-3 overflow-x-auto">
+                                        <span>A⁻¹ =</span>
+                                        <span class="fraction"><span>1</span><span>-9</span></span>
+                                        <span class="matrix-bracket">
+                                            <span class="matrix-grid-3">
+                                                <span>-1</span><span>-1</span><span>-2</span>
+                                                <span>1</span><span>-8</span><span>2</span>
+                                                <span>-6</span><span>12</span><span>-3</span>
+                                            </span>
+                                        </span>
+                                        <span>=</span>
+                                        <span class="matrix-bracket font-bold text-emerald-900">
+                                            <span class="matrix-grid-3">
+                                                <span>1/9</span><span>1/9</span><span>2/9</span>
+                                                <span>-1/9</span><span>8/9</span><span>-2/9</span>
+                                                <span>2/3</span><span>-4/3</span><span>1/3</span>
+                                            </span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CONTOH SOAL 2 -->
+                    <div class="border border-slate-200 rounded-2xl overflow-hidden">
+                        <div class="bg-slate-50 px-5 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                            <span class="font-bold text-violet-700 text-sm">CONTOH SOAL 2 (Metode Reduksi Baris / Gauss-Jordan)</span>
+                            <span class="text-xs bg-violet-100 text-violet-700 px-2.5 py-1 rounded-full font-semibold">Tingkat: Menengah</span>
+                        </div>
+                        <div class="p-5 sm:p-6 space-y-4">
+                            <div class="text-sm sm:text-base text-slate-800">
+                                Dengan menggunakan metode reduksi baris (OBE), tentukan invers dari matriks
+                                <span class="font-mono font-bold">B =</span>
+                                <span class="matrix-bracket">
+                                    <span class="matrix-grid-3">
+                                        <span>1</span><span>-2</span><span>1</span>
+                                        <span>2</span><span>-3</span><span>2</span>
+                                        <span>0</span><span>-5</span><span>1</span>
+                                    </span>
+                                </span>
+                            </div>
+
+                            <button onclick="toggleSolution('sol-2', this)" class="px-4 py-2 rounded-lg bg-violet-50 hover:bg-violet-100 text-violet-700 font-semibold text-xs sm:text-sm transition cursor-pointer">
+                                <i class="fa-solid fa-eye-slash mr-1.5"></i> Tampilkan Pembahasan
+                            </button>
+
+                            <div id="sol-2" class="hidden space-y-3 pt-2 border-t border-slate-100 text-xs sm:text-sm font-mono">
+                                <p class="font-sans text-slate-700">Susun matriks diperbesar <strong>[ B | I ]</strong>, lalu arahkan sisi kiri menjadi matriks identitas:</p>
+                                
+                                <div class="bg-slate-50 p-3.5 rounded-xl overflow-x-auto space-y-3">
+                                    <div>
+                                        <span class="text-slate-500 font-sans text-xs block mb-1">1. Matriks Awal [ B | I ]:</span>
+                                        <span class="matrix-bracket">
+                                            <span class="matrix-grid-aug">
+                                                <span>1</span><span>-2</span><span>1</span><span class="bg-slate-400 h-full w-0.5"></span><span>1</span><span>0</span><span>0</span>
+                                                <span>2</span><span>-3</span><span>2</span><span class="bg-slate-400 h-full w-0.5"></span><span>0</span><span>1</span><span>0</span>
+                                                <span>0</span><span>-5</span><span>1</span><span class="bg-slate-400 h-full w-0.5"></span><span>0</span><span>0</span><span>1</span>
+                                            </span>
+                                        </span>
+                                    </div>
+
+                                    <div>
+                                        <span class="text-violet-700 font-sans font-bold text-xs block mb-1">2. Nol-kan elemen di bawah 1 utama kolom 1 → (B₂ − 2B₁):</span>
+                                        <span class="matrix-bracket">
+                                            <span class="matrix-grid-aug">
+                                                <span>1</span><span>-2</span><span>1</span><span class="bg-slate-400 h-full w-0.5"></span><span>1</span><span>0</span><span>0</span>
+                                                <span class="text-emerald-600 font-bold">0</span><span class="text-emerald-600 font-bold">1</span><span class="text-emerald-600 font-bold">0</span><span class="bg-slate-400 h-full w-0.5"></span><span>-2</span><span>1</span><span>0</span>
+                                                <span>0</span><span>-5</span><span>1</span><span class="bg-slate-400 h-full w-0.5"></span><span>0</span><span>0</span><span>1</span>
+                                            </span>
+                                        </span>
+                                    </div>
+
+                                    <div>
+                                        <span class="text-violet-700 font-sans font-bold text-xs block mb-1">3. Nol-kan elemen di atas dan bawah 1 utama kolom 2 → (B₁ + 2B₂) dan (B₃ + 5B₂):</span>
+                                        <span class="matrix-bracket">
+                                            <span class="matrix-grid-aug">
+                                                <span>1</span><span class="text-emerald-600 font-bold">0</span><span>1</span><span class="bg-slate-400 h-full w-0.5"></span><span>-3</span><span>2</span><span>0</span>
+                                                <span>0</span><span>1</span><span>0</span><span class="bg-slate-400 h-full w-0.5"></span><span>-2</span><span>1</span><span>0</span>
+                                                <span>0</span><span class="text-emerald-600 font-bold">0</span><span class="text-emerald-600 font-bold">1</span><span class="bg-slate-400 h-full w-0.5"></span><span>-10</span><span>5</span><span>1</span>
+                                            </span>
+                                        </span>
+                                    </div>
+
+                                    <div>
+                                        <span class="text-violet-700 font-sans font-bold text-xs block mb-1">4. Nol-kan elemen di atas 1 utama kolom 3 → (B₁ − B₃):</span>
+                                        <span class="matrix-bracket">
+                                            <span class="matrix-grid-aug">
+                                                <span>1</span><span>0</span><span class="text-emerald-600 font-bold">0</span><span class="bg-slate-400 h-full w-0.5"></span><span class="text-indigo-700 font-bold">7</span><span class="text-indigo-700 font-bold">-3</span><span class="text-indigo-700 font-bold">-1</span>
+                                                <span>0</span><span>1</span><span>0</span><span class="bg-slate-400 h-full w-0.5"></span><span class="text-indigo-700 font-bold">-2</span><span class="text-indigo-700 font-bold">1</span><span class="text-indigo-700 font-bold">0</span>
+                                                <span>0</span><span>0</span><span>1</span><span class="bg-slate-400 h-full w-0.5"></span><span class="text-indigo-700 font-bold">-10</span><span class="text-indigo-700 font-bold">5</span><span class="text-indigo-700 font-bold">1</span>
+                                            </span>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl text-emerald-950">
+                                    Jadi, invers matriks B adalah:
+                                    <span class="font-bold">B⁻¹ =</span>
+                                    <span class="matrix-bracket font-bold">
+                                        <span class="matrix-grid-3">
+                                            <span>7</span><span>-3</span><span>-1</span>
+                                            <span>-2</span><span>1</span><span>0</span>
+                                            <span>-10</span><span>5</span><span>1</span>
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CONTOH SOAL 3 -->
+                    <div class="border border-slate-200 rounded-2xl overflow-hidden">
+                        <div class="bg-slate-50 px-5 py-4 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+                            <span class="font-bold text-teal-700 text-sm">CONTOH SOAL 3 (Aplikasi Pemecahan Masalah Nyata / SPLTV)</span>
+                            <span class="text-xs bg-teal-100 text-teal-700 px-2.5 py-1 rounded-full font-semibold">Tingkat: HOTS / Aplikasi</span>
+                        </div>
+                        <div class="p-5 sm:p-6 space-y-4">
+                            <p class="text-sm sm:text-base text-slate-800 leading-relaxed">
+                                Sebuah toko paket sembako menjual 3 jenis paket berisi Beras (<em>x</em>), Minyak (<em>y</em>), dan Gula (<em>z</em>):<br>
+                                • <strong>Paket Hemat:</strong> 1 kg beras + 2 liter minyak + 1 kg gula = Rp40.000<br>
+                                • <strong>Paket Keluarga:</strong> 2 kg beras + 1 liter minyak + 1 kg gula = Rp43.000<br>
+                                • <strong>Paket Spesial:</strong> 1 kg beras + 1 liter minyak + 2 kg gula = Rp41.000<br>
+                                Gunakan konsep <strong>invers matriks 3×3</strong> untuk menentukan harga satuan beras, minyak, dan gula!
+                            </p>
+
+                            <button onclick="toggleSolution('sol-3', this)" class="px-4 py-2 rounded-lg bg-teal-50 hover:bg-teal-100 text-teal-700 font-semibold text-xs sm:text-sm transition cursor-pointer">
+                                <i class="fa-solid fa-eye-slash mr-1.5"></i> Tampilkan Pembahasan
+                            </button>
+
+                            <div id="sol-3" class="hidden space-y-4 pt-2 border-t border-slate-100 text-xs sm:text-sm">
+                                <!-- Step 1: Model SPLTV ke Matriks -->
+                                <div class="bg-slate-50 p-4 rounded-xl space-y-2 font-mono">
+                                    <p class="font-sans font-bold text-slate-900">1. Ubah Soal Cerita ke Bentuk Persamaan Matriks (A · X = B):</p>
+                                    <div class="flex flex-wrap items-center gap-3 overflow-x-auto pt-1">
+                                        <span class="matrix-bracket">
+                                            <span class="matrix-grid-3">
+                                                <span>1</span><span>2</span><span>1</span>
+                                                <span>2</span><span>1</span><span>1</span>
+                                                <span>1</span><span>1</span><span>2</span>
+                                            </span>
+                                        </span>
+                                        <span class="matrix-bracket">
+                                            <span class="grid grid-cols-1 gap-1 text-center"><span>x</span><span>y</span><span>z</span></span>
+                                        </span>
+                                        <span>=</span>
+                                        <span class="matrix-bracket">
+                                            <span class="grid grid-cols-1 gap-1 text-center"><span>40.000</span><span>43.000</span><span>41.000</span></span>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Step 2: Determinan & Adjoin Rinci -->
+                                <div class="bg-slate-50 p-4 rounded-xl space-y-4 font-mono">
+                                    <p class="font-sans font-bold text-slate-900">2. Cari Determinan (Garis Miring Sarrus) dan Invers Matriks A (A⁻¹):</p>
+                                    <div class="overflow-x-auto py-1">
+                                        <div class="flex flex-wrap items-center gap-4 min-w-max">
+                                            <span class="font-bold text-slate-800">det(A) =</span>
+                                            <div class="sarrus-box bg-white rounded-lg border border-slate-200 shadow-xs">
+                                                <span class="bar-left"></span>
+                                                <span class="bar-mid"></span>
+                                                <span class="bar-sep"></span>
+                                                <svg class="sarrus-svg" viewBox="0 0 192 98">
+                                                    <line x1="24" y1="19" x2="96" y2="79" stroke="#10b981" stroke-width="2.2" stroke-linecap="round" opacity="0.65" />
+                                                    <line x1="60" y1="19" x2="132" y2="79" stroke="#10b981" stroke-width="2.2" stroke-linecap="round" opacity="0.65" />
+                                                    <line x1="96" y1="19" x2="168" y2="79" stroke="#10b981" stroke-width="2.2" stroke-linecap="round" opacity="0.65" />
+                                                    <line x1="24" y1="79" x2="96" y2="19" stroke="#f43f5e" stroke-width="2.2" stroke-dasharray="4 3" stroke-linecap="round" opacity="0.65" />
+                                                    <line x1="60" y1="79" x2="132" y2="19" stroke="#f43f5e" stroke-width="2.2" stroke-dasharray="4 3" stroke-linecap="round" opacity="0.65" />
+                                                    <line x1="96" y1="79" x2="168" y2="19" stroke="#f43f5e" stroke-width="2.2" stroke-dasharray="4 3" stroke-linecap="round" opacity="0.65" />
+                                                </svg>
+                                                <span class="cell">1</span><span class="cell">2</span><span class="cell">1</span><span class="cell text-slate-500">1</span><span class="cell text-slate-500">2</span>
+                                                <span class="cell">2</span><span class="cell">1</span><span class="cell">1</span><span class="cell text-slate-500">2</span><span class="cell text-slate-500">1</span>
+                                                <span class="cell">1</span><span class="cell">1</span><span class="cell">2</span><span class="cell text-slate-500">1</span><span class="cell text-slate-500">1</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p>• det(A) = <span class="text-emerald-700">(1·1·2 + 2·1·1 + 1·2·1)</span> − <span class="text-rose-700">(1·1·1 + 1·1·1 + 2·2·2)</span> = (2 + 2 + 2) − (1 + 1 + 8) = <strong>−4</strong></p>
+
+                                    <!-- Rincian Minor 2x2 untuk Soal 3 -->
+                                    <div class="pt-2 border-t border-slate-200/80">
+                                        <p class="font-sans font-semibold text-slate-800 mb-2">• Rincian Perhitungan Minor (Mᵢⱼ):</p>
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2.5 text-xs">
+                                            <div class="bg-white p-2.5 rounded-lg border border-slate-200 flex items-center gap-2 overflow-x-auto">
+                                                <span>M₁₁ =</span>
+                                                <span class="det-bracket"><span class="matrix-grid-2"><span>1</span><span>1</span><span>1</span><span>2</span></span></span>
+                                                <span>= 2 − 1 = <strong>1</strong></span>
+                                            </div>
+                                            <div class="bg-white p-2.5 rounded-lg border border-slate-200 flex items-center gap-2 overflow-x-auto">
+                                                <span>M₁₂ =</span>
+                                                <span class="det-bracket"><span class="matrix-grid-2"><span>2</span><span>1</span><span>1</span><span>2</span></span></span>
+                                                <span>= 4 − 1 = <strong>3</strong></span>
+                                            </div>
+                                            <div class="bg-white p-2.5 rounded-lg border border-slate-200 flex items-center gap-2 overflow-x-auto">
+                                                <span>M₁₃ =</span>
+                                                <span class="det-bracket"><span class="matrix-grid-2"><span>2</span><span>1</span><span>1</span><span>1</span></span></span>
+                                                <span>= 2 − 1 = <strong>1</strong></span>
+                                            </div>
+                                            <div class="bg-white p-2.5 rounded-lg border border-slate-200 flex items-center gap-2 overflow-x-auto">
+                                                <span>M₂₁ =</span>
+                                                <span class="det-bracket"><span class="matrix-grid-2"><span>2</span><span>1</span><span>1</span><span>2</span></span></span>
+                                                <span>= 4 − 1 = <strong>3</strong></span>
+                                            </div>
+                                            <div class="bg-white p-2.5 rounded-lg border border-slate-200 flex items-center gap-2 overflow-x-auto">
+                                                <span>M₂₂ =</span>
+                                                <span class="det-bracket"><span class="matrix-grid-2"><span>1</span><span>1</span><span>1</span><span>2</span></span></span>
+                                                <span>= 2 − 1 = <strong>1</strong></span>
+                                            </div>
+                                            <div class="bg-white p-2.5 rounded-lg border border-slate-200 flex items-center gap-2 overflow-x-auto">
+                                                <span>M₂₃ =</span>
+                                                <span class="det-bracket"><span class="matrix-grid-2"><span>1</span><span>2</span><span>1</span><span>1</span></span></span>
+                                                <span>= 1 − 2 = <strong>-1</strong></span>
+                                            </div>
+                                            <div class="bg-white p-2.5 rounded-lg border border-slate-200 flex items-center gap-2 overflow-x-auto">
+                                                <span>M₃₁ =</span>
+                                                <span class="det-bracket"><span class="matrix-grid-2"><span>2</span><span>1</span><span>1</span><span>1</span></span></span>
+                                                <span>= 2 − 1 = <strong>1</strong></span>
+                                            </div>
+                                            <div class="bg-white p-2.5 rounded-lg border border-slate-200 flex items-center gap-2 overflow-x-auto">
+                                                <span>M₃₂ =</span>
+                                                <span class="det-bracket"><span class="matrix-grid-2"><span>1</span><span>1</span><span>2</span><span>1</span></span></span>
+                                                <span>= 1 − 2 = <strong>-1</strong></span>
+                                            </div>
+                                            <div class="bg-white p-2.5 rounded-lg border border-slate-200 flex items-center gap-2 overflow-x-auto">
+                                                <span>M₃₃ =</span>
+                                                <span class="det-bracket"><span class="matrix-grid-2"><span>1</span><span>2</span><span>2</span><span>1</span></span></span>
+                                                <span>= 1 − 4 = <strong>-3</strong></span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Rincian Kofaktor -> Transpose -> Adjoint -->
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                                        <div class="bg-white p-3 rounded-lg border border-slate-200">
+                                            <span class="font-sans text-xs text-slate-500 block mb-1.5">• Matriks Kofaktor (C) [pola tanda +,−,+ / −,+,− / +,−,+]:</span>
+                                            <div>
+                                                C =
+                                                <span class="matrix-bracket">
+                                                    <span class="matrix-grid-3">
+                                                        <span>1</span><span>-3</span><span>1</span>
+                                                        <span>-3</span><span>1</span><span>1</span>
+                                                        <span>1</span><span>1</span><span>-3</span>
+                                                    </span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="bg-white p-3 rounded-lg border border-slate-200">
+                                            <span class="font-sans text-xs text-slate-500 block mb-1.5">• Matriks Adjoin (adj(A) = Cᵀ):</span>
+                                            <div>
+                                                adj(A) =
+                                                <span class="matrix-bracket font-bold text-teal-800">
+                                                    <span class="matrix-grid-3">
+                                                        <span>1</span><span>-3</span><span>1</span>
+                                                        <span>-3</span><span>1</span><span>1</span>
+                                                        <span>1</span><span>1</span><span>-3</span>
+                                                    </span>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="flex flex-wrap items-center gap-2 pt-1">
+                                        <span>• Maka A⁻¹ =</span>
+                                        <span class="fraction"><span>1</span><span>-4</span></span>
+                                        <span class="matrix-bracket">
+                                            <span class="matrix-grid-3">
+                                                <span>1</span><span>-3</span><span>1</span>
+                                                <span>-3</span><span>1</span><span>1</span>
+                                                <span>1</span><span>1</span><span>-3</span>
+                                            </span>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-xl font-mono text-emerald-950">
+                                    <p class="font-sans font-bold mb-2">3. Hitung X = A⁻¹ · B:</p>
+                                    <div class="flex flex-wrap items-center gap-2 overflow-x-auto">
+                                        <span>X =</span>
+                                        <span class="fraction"><span>1</span><span>-4</span></span>
+                                        <span class="matrix-bracket">
+                                            <span class="matrix-grid-3">
+                                                <span>1</span><span>-3</span><span>1</span>
+                                                <span>-3</span><span>1</span><span>1</span>
+                                                <span>1</span><span>1</span><span>-3</span>
+                                            </span>
+                                        </span>
+                                        <span class="matrix-bracket">
+                                            <span class="grid grid-cols-1 gap-1 text-center"><span>40.000</span><span>43.000</span><span>41.000</span></span>
+                                        </span>
+                                        <span>= −1/4</span>
+                                        <span class="matrix-bracket">
+                                            <span class="grid grid-cols-1 gap-1 text-center"><span>-48.000</span><span>-36.000</span><span>-40.000</span></span>
+                                        </span>
+                                        <span>=</span>
+                                        <span class="matrix-bracket font-bold">
+                                            <span class="grid grid-cols-1 gap-1 text-center"><span>12.000</span><span>9.000</span><span>10.000</span></span>
+                                        </span>
+                                    </div>
+                                    <p class="font-sans mt-3 text-sm">
+                                        <strong>Kesimpulan:</strong> Harga Beras = <strong>Rp12.000/kg</strong>, Minyak = <strong>Rp9.000/liter</strong>, dan Gula = <strong>Rp10.000/kg</strong>.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-8 px-4 border-t border-slate-800 mt-16">
+        <div class="max-w-5xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-xs sm:text-sm">
+            <div class="flex items-center gap-2">
+                <span class="w-7 h-7 rounded-lg bg-indigo-600 text-white font-bold flex items-center justify-center text-xs">A⁻¹</span>
+                <span class="text-slate-200 font-semibold">Modul Interaktif Matematika — Invers Matriks 3×3</span>
+            </div>
+            <p>Dirancang untuk pembelajaran mandiri & interaktif di kelas.</p>
+        </div>
+    </footer>
+
+    <!-- =========================================================
+         JAVASCRIPT INTERAKTIVITAS
+    ========================================================== -->
+    <script>
+        // 1. Toggle Mobile Menu & Progress Bar Scroll
+        const mobileBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById('scroll-progress').style.width = scrolled + '%';
+        });
+
+        // 2. Data & Render 5 Soal Warm-Up Invers Matriks 2x2
+        const warmupQuestions = [
+            {
+                id: 1,
+                level: "Soal 1 (Dasar - Determinan 1)",
+                matrix: [3, 2, 4, 3],
+                questionText: "Tentukan invers dari matriks P di bawah ini:",
+                options: [
+                    { mat: [3, -2, -4, 3], correct: true },
+                    { mat: [3, 2, 4, 3], correct: false },
+                    { mat: [-3, 2, 4, -3], correct: false },
+                    { mat: [3, -4, -2, 3], correct: false }
+                ],
+                explanation: "det(P) = (3)(3) − (2)(4) = 9 − 8 = 1. Tukar posisi diagonal utama (3 dan 3) dan ubah tanda diagonal samping (-2 dan -4), lalu bagi 1."
+            },
+            {
+                id: 2,
+                level: "Soal 2 (Determinan Negatif)",
+                matrix: [3, 2, 2, 1],
+                questionText: "Tentukan invers dari matriks Q berikut:",
+                options: [
+                    { mat: [1, -2, -2, 3], correct: false },
+                    { mat: [-1, 2, 2, -3], correct: true },
+                    { mat: [-1, -2, -2, -3], correct: false },
+                    { mat: [3, -2, -2, 1], correct: false }
+                ],
+                explanation: "det(Q) = (3)(1) − (2)(2) = 3 − 4 = −1. Maka Q⁻¹ = (1 / −1) × [[1, -2], [-2, 3]] = [[-1, 2], [2, -3]]."
+            },
+            {
+                id: 3,
+                level: "Soal 3 (Elemen Negatif)",
+                matrix: [4, -5, -2, 3],
+                questionText: "Berapakah invers dari matriks R di bawah ini?",
+                options: [
+                    { mat: ["3/2", "5/2", "1", "2"], correct: true },
+                    { mat: [3, 5, 2, 4], correct: false },
+                    { mat: ["3/2", "-5/2", "-1", "2"], correct: false },
+                    { mat: [2, "5/2", 1, "3/2"], correct: false }
+                ],
+                explanation: "det(R) = (4)(3) − (-5)(-2) = 12 − 10 = 2. Adjoin R = [[3, 5], [2, 4]]. Bagi setiap elemen dengan 2 sehingga diperoleh [[3/2, 5/2], [1, 2]]."
+            },
+            {
+                id: 4,
+                level: "Soal 4 (Identifikasi Matriks Singular)",
+                matrix: [6, 3, 4, 2],
+                questionText: "Bagaimana sifat dan invers dari matriks S berikut?",
+                isTextOption: true,
+                options: [
+                    { text: "Tidak memiliki invers (Matriks Singular, det = 0)", correct: true },
+                    { text: "Memiliki invers dengan det(S) = 24", correct: false },
+                    { text: "Inversnya adalah matriks identitas I", correct: false },
+                    { text: "Memiliki invers dengan det(S) = −12", correct: false }
+                ],
+                explanation: "det(S) = (6)(2) − (3)(4) = 12 − 12 = 0. Karena determinannya sama dengan 0, matriks S disebut matriks singular dan tidak memiliki invers."
+            },
+            {
+                id: 5,
+                level: "Soal 5 (Penalaran Aljabar)",
+                matrix: [5, 7, 2, 3],
+                questionText: "Diketahui matriks T = [[5, 7], [2, 3]]. Hasil dari T⁻¹ adalah...",
+                options: [
+                    { mat: [3, -7, -2, 5], correct: true },
+                    { mat: [-3, 7, 2, -5], correct: false },
+                    { mat: [5, -7, -2, 3], correct: false },
+                    { mat: [3, -2, -7, 5], correct: false }
+                ],
+                explanation: "det(T) = (5)(3) − (7)(2) = 15 − 14 = 1. Tukar 5 dan 3, lalu beri tanda negatif pada 7 dan 2, hasilnya [[3, -7], [-2, 5]]."
+            }
+        ];
+
+        let userScore = 0;
+        const answeredQuestions = new Set();
+
+        function renderWarmup() {
+            const container = document.getElementById('warmup-container');
+            container.innerHTML = warmupQuestions.map((q, qIdx) => {
+                const optionsHtml = q.options.map((opt, optIdx) => {
+                    if (q.isTextOption) {
+                        return `
+                            <button onclick="checkWarmup(${qIdx}, ${optIdx}, this)" class="warmup-opt-${qIdx} w-full text-left p-3.5 rounded-xl border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/50 text-xs sm:text-sm font-medium transition cursor-pointer flex items-center justify-between">
+                                <span>${opt.text}</span>
+                                <span class="status-icon"></span>
+                            </button>
+                        `;
+                    }
+                    return `
+                        <button onclick="checkWarmup(${qIdx}, ${optIdx}, this)" class="warmup-opt-${qIdx} p-3 rounded-xl border border-slate-200 hover:border-indigo-400 hover:bg-indigo-50/50 text-xs sm:text-sm font-mono transition cursor-pointer flex items-center justify-center gap-2">
+                            <span class="matrix-bracket">
+                                <span class="matrix-grid-2">
+                                    <span>${opt.mat[0]}</span><span>${opt.mat[1]}</span>
+                                    <span>${opt.mat[2]}</span><span>${opt.mat[3]}</span>
+                                </span>
+                            </span>
+                            <span class="status-icon"></span>
+                        </button>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="border border-slate-200 rounded-xl p-5 bg-slate-50/50">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+                            <span class="text-xs font-bold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-md">${q.level}</span>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-4 mb-4">
+                            <p class="text-sm sm:text-base font-medium text-slate-800">${q.questionText}</p>
+                            <span class="matrix-bracket font-bold text-slate-900 bg-white py-1 rounded">
+                                <span class="matrix-grid-2">
+                                    <span>${q.matrix[0]}</span><span>${q.matrix[1]}</span>
+                                    <span>${q.matrix[2]}</span><span>${q.matrix[3]}</span>
+                                </span>
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 ${q.isTextOption ? '' : 'lg:grid-cols-4'} gap-3">
+                            ${optionsHtml}
+                        </div>
+                        <div id="warmup-feedback-${qIdx}" class="hidden mt-3 p-3.5 rounded-xl text-xs sm:text-sm fade-in"></div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function checkWarmup(qIdx, optIdx, btnElement) {
+            if (answeredQuestions.has(qIdx)) return;
+            answeredQuestions.add(qIdx);
+
+            const q = warmupQuestions[qIdx];
+            const selectedOpt = q.options[optIdx];
+            const allBtns = document.querySelectorAll(`.warmup-opt-${qIdx}`);
+            const feedbackEl = document.getElementById(`warmup-feedback-${qIdx}`);
+
+            allBtns.forEach((btn, idx) => {
+                btn.disabled = true;
+                btn.classList.remove('hover:border-indigo-400', 'hover:bg-indigo-50/50');
+                if (q.options[idx].correct) {
+                    btn.classList.add('bg-emerald-50', 'border-emerald-500', 'text-emerald-900', 'font-bold');
+                    btn.querySelector('.status-icon').innerHTML = '<i class="fa-solid fa-circle-check text-emerald-600"></i>';
+                }
+            });
+
+            if (selectedOpt.correct) {
+                userScore++;
+                document.getElementById('warmup-score').textContent = userScore;
+                feedbackEl.className = "mt-3 p-3.5 rounded-xl text-xs sm:text-sm bg-emerald-50 border border-emerald-200 text-emerald-900 fade-in";
+                feedbackEl.innerHTML = `<strong><i class="fa-solid fa-check-circle mr-1"></i> Tepat Sekali!</strong> ${q.explanation}`;
+            } else {
+                btnElement.classList.add('bg-rose-50', 'border-rose-500', 'text-rose-900');
+                btnElement.querySelector('.status-icon').innerHTML = '<i class="fa-solid fa-circle-xmark text-rose-600"></i>';
+                feedbackEl.className = "mt-3 p-3.5 rounded-xl text-xs sm:text-sm bg-rose-50 border border-rose-200 text-rose-900 fade-in";
+                feedbackEl.innerHTML = `<strong><i class="fa-solid fa-circle-info mr-1"></i> Kurang Tepat.</strong> ${q.explanation}`;
+            }
+        }
+
+        // 3. Simulasi Dekripsi Hill Cipher
+        document.getElementById('btn-decrypt-demo').addEventListener('click', () => {
+            const res = document.getElementById('decrypt-result');
+            res.classList.remove('hidden');
+        });
+
+        // 4. Tab Switcher Materi (Adjoin vs OBE)
+        function switchMethodTab(tab) {
+            const btnAdjoin = document.getElementById('tab-adjoin');
+            const btnObe = document.getElementById('tab-obe');
+            const contentAdjoin = document.getElementById('content-adjoin');
+            const contentObe = document.getElementById('content-obe');
+
+            if (tab === 'adjoin') {
+                btnAdjoin.className = "px-4 py-2.5 rounded-xl text-sm font-bold bg-indigo-600 text-white shadow-sm transition cursor-pointer";
+                btnObe.className = "px-4 py-2.5 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition cursor-pointer";
+                contentAdjoin.classList.remove('hidden');
+                contentObe.classList.add('hidden');
+            } else {
+                btnObe.className = "px-4 py-2.5 rounded-xl text-sm font-bold bg-violet-600 text-white shadow-sm transition cursor-pointer";
+                btnAdjoin.className = "px-4 py-2.5 rounded-xl text-sm font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition cursor-pointer";
+                contentObe.classList.remove('hidden');
+                contentAdjoin.classList.add('hidden');
+            }
+        }
+
+        // 5. Visualizer Interaktif Minor M_ij
+        function showMinorDemo(row, col) {
+            const btns = document.querySelectorAll('.minor-btn');
+            let idx = 0;
+            for (let r = 1; r <= 3; r++) {
+                for (let c = 1; c <= 3; c++) {
+                    const btn = btns[idx];
+                    btn.className = "minor-btn px-3 py-2 rounded-lg border font-mono text-sm transition cursor-pointer ";
+                    if (r === row && c === col) {
+                        btn.className += "bg-indigo-600 text-white font-bold border-indigo-600";
+                    } else if (r === row || c === col) {
+                        btn.className += "bg-rose-100 text-rose-400 line-through border-rose-200";
+                    } else {
+                        btn.className += "bg-emerald-50 text-emerald-800 font-bold border-emerald-300";
+                    }
+                    idx++;
+                }
+            }
+
+            // Ambil 4 elemen tersisa
+            const rem = [];
+            for (let r = 1; r <= 3; r++) {
+                for (let c = 1; c <= 3; c++) {
+                    if (r !== row && c !== col) rem.push(`a${r}${c}`);
+                }
+            }
+
+            const out = document.getElementById('minor-visualizer-output');
+            out.innerHTML = `
+                <div class="text-slate-700">
+                    <span class="font-sans text-xs text-slate-500 block mb-1">Tutup <strong>Baris ke-${row}</strong> dan <strong>Kolom ke-${col}</strong> (merah):</span>
+                    <div class="flex items-center gap-2 mt-2">
+                        <strong class="text-indigo-700">M${row}${col} =</strong>
+                        <span class="det-bracket text-emerald-700 font-bold">
+                            <span class="matrix-grid-2">
+                                <span>${rem[0]}</span><span>${rem[1]}</span>
+                                <span>${rem[2]}</span><span>${rem[3]}</span>
+                            </span>
+                        </span>
+                        <span>= (${rem[0]}·${rem[3]}) − (${rem[1]}·${rem[2]})</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 6. Toggle Pembahasan Contoh Soal
+        function toggleSolution(id, btn) {
+            const el = document.getElementById(id);
+            if (el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+                btn.innerHTML = '<i class="fa-solid fa-eye mr-1.5"></i> Sembunyikan Pembahasan';
+            } else {
+                el.classList.add('hidden');
+                btn.innerHTML = '<i class="fa-solid fa-eye-slash mr-1.5"></i> Tampilkan Pembahasan';
+            }
+        }
+
+        // 7. Simulator Kalkulator Invers Matriks 3x3
+        function gcd(a, b) {
+            a = Math.abs(a);
+            b = Math.abs(b);
+            while (b) {
+                let t = b;
+                b = a % b;
+                a = t;
+            }
+            return a;
+        }
+
+        function formatFraction(num, den) {
+            if (num === 0) return "0";
+            if (den < 0) {
+                num = -num;
+                den = -den;
+            }
+            const divisor = gcd(num, den);
+            num /= divisor;
+            den /= divisor;
+            if (den === 1) return `${num}`;
+            return `${num}/${den}`;
+        }
+
+        function calculateSimulator() {
+            const m = [
+                [parseFloat(document.getElementById('m00').value) || 0, parseFloat(document.getElementById('m01').value) || 0, parseFloat(document.getElementById('m02').value) || 0],
+                [parseFloat(document.getElementById('m10').value) || 0, parseFloat(document.getElementById('m11').value) || 0, parseFloat(document.getElementById('m12').value) || 0],
+                [parseFloat(document.getElementById('m20').value) || 0, parseFloat(document.getElementById('m21').value) || 0, parseFloat(document.getElementById('m22').value) || 0]
+            ];
+
+            // Hitung minor 2x2
+            const minor = (r, c) => {
+                const sub = [];
+                for (let i = 0; i < 3; i++) {
+                    if (i === r) continue;
+                    const rowArr = [];
+                    for (let j = 0; j < 3; j++) {
+                        if (j === c) continue;
+                        rowArr.push(m[i][j]);
+                    }
+                    sub.push(rowArr);
+                }
+                return sub[0][0] * sub[1][1] - sub[0][1] * sub[1][0];
+            };
+
+            const C = [
+                [minor(0,0), -minor(0,1), minor(0,2)],
+                [-minor(1,0), minor(1,1), -minor(1,2)],
+                [minor(2,0), -minor(2,1), minor(2,2)]
+            ];
+
+            const det = m[0][0] * C[0][0] + m[0][1] * C[0][1] + m[0][2] * C[0][2];
+            const out = document.getElementById('sim-output');
+
+            if (det === 0) {
+                out.innerHTML = `
+                    <div class="p-4 rounded-xl bg-rose-950/80 border border-rose-500/50 text-rose-200 space-y-2">
+                        <p class="font-bold text-rose-400 text-base"><i class="fa-solid fa-triangle-exclamation mr-1"></i> Determinan |A| = 0</p>
+                        <p class="font-sans text-sm">Matriks ini merupakan <strong>Matriks Singular</strong> sehingga <strong>TIDAK MEMILIKI INVERS</strong>. Coba ubah salah satu angka di sebelah kiri!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Transpose Kofaktor -> Adjoin
+            const adj = [
+                [C[0][0], C[1][0], C[2][0]],
+                [C[0][1], C[1][1], C[2][1]],
+                [C[0][2], C[1][2], C[2][2]]
+            ];
+
+            const invHtml = adj.flat().map(val => `<span>${formatFraction(val, det)}</span>`).join('');
+            const adjHtml = adj.flat().map(val => `<span>${val}</span>`).join('');
+            const cofHtml = C.flat().map(val => `<span>${val}</span>`).join('');
+
+            out.innerHTML = `
+                <div class="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-slate-700">
+                    <span class="text-slate-300">1. Determinan |A|:</span>
+                    <span class="px-3 py-1 rounded-lg bg-indigo-600/30 border border-indigo-400/40 text-amber-300 font-bold text-base">|A| = ${det}</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 py-2">
+                    <div>
+                        <span class="text-slate-400 text-xs block mb-1.5">2. Matriks Kofaktor (C):</span>
+                        <span class="matrix-bracket text-slate-200">
+                            <span class="matrix-grid-3">${cofHtml}</span>
+                        </span>
+                    </div>
+                    <div>
+                        <span class="text-slate-400 text-xs block mb-1.5">3. Matriks Adjoin (adj(A) = Cᵀ):</span>
+                        <span class="matrix-bracket text-indigo-300">
+                            <span class="matrix-grid-3">${adjHtml}</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="pt-3 border-t border-slate-700">
+                    <span class="text-emerald-400 font-bold text-xs uppercase tracking-wider block mb-2">4. Hasil Akhir Invers Matriks (A⁻¹):</span>
+                    <div class="flex items-center gap-3 overflow-x-auto bg-emerald-950/40 border border-emerald-500/30 p-3 rounded-xl">
+                        <span class="text-emerald-300 font-bold">A⁻¹ =</span>
+                        <span class="matrix-bracket text-emerald-300 font-bold text-sm sm:text-base">
+                            <span class="matrix-grid-3">${invHtml}</span>
+                        </span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function setPresetMatrix() {
+            const presets = [
+                [2, 1, 3, -1, 3, 0, 2, -3, 4],
+                [1, 2, 1, 2, 1, 1, 1, 1, 2],
+                [1, -2, 1, 2, -3, 2, 0, -5, 1],
+                [0, 3, 2, 1, 1, 0, 4, -2, -1],
+                [3, -5, 0, 2, -3, 1, -1, 2, 2]
+            ];
+            const rand = presets[Math.floor(Math.random() * presets.length)];
+            const ids = ['m00','m01','m02','m10','m11','m12','m20','m21','m22'];
+            ids.forEach((id, i) => {
+                document.getElementById(id).value = rand[i];
+            });
+            calculateSimulator();
+        }
+
+        // Inisialisasi saat halaman dimuat
+        window.addEventListener('DOMContentLoaded', () => {
+            renderWarmup();
+            showMinorDemo(1, 1);
+            calculateSimulator();
+        });
+    </script>
+</body>
+</html>
